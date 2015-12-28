@@ -39,7 +39,7 @@ import pyglet.media
 import struct
 import webbrowser
 
-Oe2sSLE_VERSION = (0,0,1)
+Oe2sSLE_VERSION = (0,0,2)
 
 class WaitDialog(tk.Toplevel):
     def __init__(self, parent, *args, **kwargs):
@@ -993,7 +993,7 @@ class SliceEditor(tk.Frame):
         tk.Label(frame,text="/").grid(row=1,column=2)
         self.beat = tk.StringVar()
         self.beatTrace = None
-        self.beatEdit = ROSpinbox(frame, values=sorted(e2s.esli_beat, key=e2s.esli_beat.get), width=6, textvariable=self.beat)
+        self.beatEdit = ROSpinbox(frame, values=tuple(sorted(e2s.esli_beat, key=e2s.esli_beat.get)), width=6, textvariable=self.beat)
         self.beatEdit.grid(row=1,column=3,sticky=tk.W)
         self.numActiveStepsEntry = tk.Entry(frame, width=2, textvariable=self.numActiveSteps, state=tk.DISABLED)
         self.numActiveStepsEntry.grid(row=1,column=4)
@@ -1063,7 +1063,7 @@ class SliceEditor(tk.Frame):
             curr_zoom /= 2
         zooms.append('all')
         zooms.reverse()
-        self.zoomEdit.config(values=zooms)
+        self.zoomEdit.config(values=tuple(zooms))
         #self.zoomEdit.config(values=('all', 0.0625, 0.125, 0.25, 0.5, 1. ,2. ,4., 8., 16.))
         self.wavDisplay.set_wav(fmt, data)
         self.normalSampleOptions.set_sample(fmt, data, esli)
