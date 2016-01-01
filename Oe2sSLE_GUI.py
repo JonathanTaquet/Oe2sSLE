@@ -1100,7 +1100,7 @@ class SliceEditor(tk.Frame):
         self.beatTrace = self.beat.trace('w', self._beatEdit)
 
         self.numActiveSteps.set(esli.slicesNumActiveSteps)
-        self.numActiveStepsTace = self.numActiveSteps.trace('w', self._numActiveStepsChanged)
+        self.numActiveStepsTrace = self.numActiveSteps.trace('w', self._numActiveStepsChanged)
 
     def _activeStepEdit(self, index):
         value = self.activeSteps[index].get()
