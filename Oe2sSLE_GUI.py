@@ -297,7 +297,7 @@ class WaveDisplay(tk.Canvas):
         lineset = self.activeLineSet
         #print(event.x,event.y)
         if lineset is not None:
-            amp_active = lineset.loop_first is None
+            amp_active = 1 #lineset.loop_first is None
         
             if (abs(event.x-lineset._last_x) < 5
                 or abs(event.x-lineset._mid_x) < 5
@@ -320,7 +320,7 @@ class WaveDisplay(tk.Canvas):
         lineset = self.activeLineSet
         #print(event.x,event.y)
         if lineset is not None:
-            amp_active = lineset.loop_first is None
+            amp_active = 1 #lineset.loop_first is None
         
             if abs(event.x-lineset._last_x) < 5:
                 self.drag=3
@@ -448,10 +448,9 @@ class WaveDisplay(tk.Canvas):
                         last = lineSet.last.get()
                         if lineSet.loop_first is not None:
                             mid = lineSet.loop_first.get()
-                            amp = None
                         else:
                             mid = lineSet.attack_last.get()
-                            amp = lineSet.amplitude.get()
+                        amp = lineSet.amplitude.get()
                         if amp is not None:
                             start_x = max(0, math.floor((first+0.25 - fr)*w/(to - fr)))
                             end_x = min(w-1, math.ceil((last+0.75 - fr)*w/(to - fr)))
@@ -851,6 +850,7 @@ class NormalSampleOptions(tk.LabelFrame):
         self.lineSet.first = CVar(self.start,0,self.sample_length-1)
         self.lineSet.last = CVar(self.stop,0,self.sample_length-1)
         self.lineSet.loop_first = CVar(self.loopStart,0,self.sample_length-1)
+        self.lineSet.amplitude = CVar(self.playVolume,0,65535)
 
         self._selected=False
 
@@ -925,8 +925,17 @@ class NormalSampleOptions(tk.LabelFrame):
         self.editor.wavDisplay.refresh()
     
     def _playVolume_set(self, *args):
-        self.esli.playVolume = self.playVolume.get()
-        
+        playVolume = self.playVolume.get()
+
+        if playVolume > 65535:
+            self.playVolume.set(65535)
+            playVolume = 65535
+        elif playVolume < 0:
+            self.playVolume.set(0)
+            playVolume = 0
+
+        self.esli.playVolume = playVolume
+        self.editor.wavDisplay.refresh()
 class SlicedSampleOptions(tk.LabelFrame):
     def __init__(self, parent, editor, *arg, **kwarg):
         super().__init__(parent, *arg, **kwarg)
