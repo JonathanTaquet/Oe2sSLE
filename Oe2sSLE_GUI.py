@@ -709,11 +709,13 @@ class Slice:
         amp = self.amplitude.get()
         if amp > 65536:
             self.amplitude.set(65536)
+            amp = 65536
         elif amp < 0:
             self.amplitude.set(0)
-        else:
-            self.esli.slices[self.sliceNum].amplitude = amp
-            self.editor.wavDisplay.refresh()
+            amp = 0
+
+        self.esli.slices[self.sliceNum].amplitude = amp
+        self.editor.wavDisplay.refresh()
 
 
     def _play(self, *args):
