@@ -1101,6 +1101,8 @@ class SliceEditor(tk.Frame):
 
         self.numActiveSteps.set(esli.slicesNumActiveSteps)
         self.numActiveStepsTrace = self.numActiveSteps.trace('w', self._numActiveStepsChanged)
+        
+        self.slicedRadioV.set(self.numActiveSteps.get()>0)
 
     def _activeStepEdit(self, index):
         value = self.activeSteps[index].get()
