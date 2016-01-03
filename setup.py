@@ -12,10 +12,8 @@ opts={
 	"py2exe": {
         #"includes": "mod1, mod2",
         "dist_dir": "Oe2sSLE-"+str(GUI.Oe2sSLE_VERSION[0])+"."+str(GUI.Oe2sSLE_VERSION[1])+"."+str(GUI.Oe2sSLE_VERSION[2])+"-win-x86",
-        "excludes": ["PIL", "pyglet.image", "pyglet.canvas", "pyglet.extlib",
-        			 "pyglet.graphics", "pyglet.text", "pyglet.gl", "pyglet.font", "pyglet.app", "pyglet.window"
-        			 "pdb", "doctest", "distutils",],
-        "includes": "tkinter",
+        "excludes": ["pdb", "doctest", "distutils"],
+        "includes": ["tkinter", "pyglet.app", "pyglet.clock", "pyglet.resource"],
         #"bundle_files": 2,
         #"compressed": True,
         "optimize": 2
