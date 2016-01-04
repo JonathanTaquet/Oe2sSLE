@@ -22,6 +22,9 @@ import struct
 import RIFF
 import warnings
 
+from RIFF.smpl import RIFF_smpl
+from RIFF.cue  import RIFF_cue
+
 class OSC:
     ANALOG   = 0
     AUDIO_IN = 1
@@ -316,7 +319,9 @@ class RIFF_korg(RIFF.ChunkData):
 class RIFF_korgWAVEChunkList(RIFF.WAVEChunkList):
 
     registeredChunks = {
-        b'korg' : RIFF_korg
+        b'korg' : RIFF_korg,
+        b'smpl' : RIFF_smpl,
+        b'cue ' : RIFF_cue,
     }
     
     def __init__(self, registeredChunks=dict()):
