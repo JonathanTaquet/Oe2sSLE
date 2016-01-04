@@ -1606,7 +1606,7 @@ class SampleAllEditor(tk.Tk):
         i for i in range(183,184)] + [
         i for i in range(185,186)] + [
         i for i in range(187,189)] + [
-        i for i in range(190,261)]
+        i for i in range(190,461)]
 
     def __init__(self, *args, **kw):
         self.root = tk.Tk.__init__(self, *args, **kw)
