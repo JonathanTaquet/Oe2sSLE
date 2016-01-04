@@ -39,7 +39,7 @@ import pyglet.media
 import struct
 import webbrowser
 
-Oe2sSLE_VERSION = (0,0,3)
+Oe2sSLE_VERSION = (0,0,4)
 
 class WaitDialog(tk.Toplevel):
     def __init__(self, parent, *args, **kwargs):
