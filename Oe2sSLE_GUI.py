@@ -1735,7 +1735,9 @@ class SampleAllEditor(tk.Tk):
                             
                     sampleAll = e2s.e2s_sample_all()
                     for sample in self.sampleList.samples:
-                        sampleAll.samples.append(sample.e2s_sample)
+                        # make clean local copy (no external metadata)
+                        e2s_sample = sample.e2s_sample.get_clean_copy()
+                        sampleAll.samples.append(e2s_sample)
                     try:
                         sampleAll.save(filename)
                     except Exception as e:

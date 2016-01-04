@@ -357,6 +357,15 @@ class e2s_sample:
     
     def get_fmt(self):
         return self.RIFF.chunkList.get_chunk(b'fmt ').data
+
+    def get_clean_copy(self):
+        copy = e2s_sample()
+        copy.header = RIFF.ChunkHeader(id=self.header.id)
+        copy.RIFF.chunkList.chunks.append(self.RIFF.chunkList.get_chunk(b'fmt '))
+        copy.RIFF.chunkList.chunks.append(self.RIFF.chunkList.get_chunk(b'data'))
+        copy.RIFF.chunkList.chunks.append(self.RIFF.chunkList.get_chunk(b'korg'))
+        copy.header.size = len(copy.RIFF)
+        return copy
         
 # TODO: check if e2s supports RIFX files (big endian)
 
