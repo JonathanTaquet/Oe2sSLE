@@ -812,12 +812,20 @@ class NormalSampleOptions(tk.LabelFrame):
     def play_stop(self):
         self.editor.play_stop()
 
-    def set_sample(self, fmt, data, esli):
+    def set_sample(self, smpl):
+        self.smpl = smpl
+
+        fmt = smpl.e2s_sample.get_fmt()
+        data = smpl.e2s_sample.get_data()
+        esli = smpl.e2s_sample.get_esli()        
+
         self.fmt = fmt
         self.data = data.rawdata
         self.esli = esli
         self.blockAlign = fmt.blockAlign
         self.sample_length = len(data) // self.blockAlign
+        
+        self.oneshot = self.smpl.oneShot.get()
         
         if self.start_trace:
             self.start.trace_vdelete('w', self.start_trace)
@@ -902,7 +910,14 @@ class NormalSampleOptions(tk.LabelFrame):
 
         start = self.start.get()
         stop = self.stop.get()
+        loopStart = self.loopStart.get()
         self.esli.OSC_EndPoint_offset = (stop-start)*self.blockAlign
+        if self.rootSet is None and self.oneshot:
+            # can't be oneShot and have loopStart != stop
+            if loopStart != stop:
+                self.smpl.oneShot.set(False)
+            else:
+                self.smpl.oneShot.set(True)
         self.editor.wavDisplay.set_activeLineSet(self.lineSet)
         self.editor.wavDisplay.refresh()
 
@@ -919,8 +934,15 @@ class NormalSampleOptions(tk.LabelFrame):
             self.rootSet = None
 
         start = self.start.get()
+        stop = self.stop.get()
         loopStart = self.loopStart.get()
         self.esli.OSC_LoopStartPoint_offset = (loopStart-start)*self.blockAlign
+        if self.rootSet is None and self.oneshot:
+            # can't be oneShot and have loopStart != stop
+            if loopStart != stop:
+                self.smpl.oneShot.set(False)
+            else:
+                self.smpl.oneShot.set(True)
         self.editor.wavDisplay.set_activeLineSet(self.lineSet)
         self.editor.wavDisplay.refresh()
     
@@ -1061,7 +1083,13 @@ class SliceEditor(tk.Frame):
             else:
                 raise Exception("Unknown scroll unit: " + what)
 
-    def set_sample(self, fmt, data, esli):
+    def set_sample(self, smpl):
+        self.smpl = smpl
+
+        fmt = smpl.e2s_sample.get_fmt()
+        data = smpl.e2s_sample.get_data()
+        esli = smpl.e2s_sample.get_esli()        
+
         self.esli = esli
         self.zoomVar.set('all')
         #compute zoom 'all' factor:
@@ -1076,7 +1104,7 @@ class SliceEditor(tk.Frame):
         self.zoomEdit.config(values=tuple(zooms))
         #self.zoomEdit.config(values=('all', 0.0625, 0.125, 0.25, 0.5, 1. ,2. ,4., 8., 16.))
         self.wavDisplay.set_wav(fmt, data)
-        self.normalSampleOptions.set_sample(fmt, data, esli)
+        self.normalSampleOptions.set_sample(smpl)
         self.slicedSampleOptions.set_sample(fmt, data, esli)
         
         if self.numActiveStepsTrace:
@@ -1367,7 +1395,17 @@ class Sample(object):
         self.e2s_sample.get_esli().OSC_category = e2s.esli_str_to_OSC_cat[self.oscCat.get()]
     
     def _oneShot_set(self, *args):
-        self.e2s_sample.get_esli().OSC_OneShot = self.oneShot.get()
+        oneShot = self.oneShot.get()
+        if oneShot and self.e2s_sample.get_esli().OSC_LoopStartPoint_offset != self.e2s_sample.get_esli().OSC_EndPoint_offset:
+            if tk.messagebox.askyesno("Loop Start is set", "Loop start shall be reset to allow one shot.\nContinue?"):
+                self.e2s_sample.get_esli().OSC_LoopStartPoint_offset = self.e2s_sample.get_esli().OSC_EndPoint_offset
+                self.e2s_sample.get_esli().OSC_OneShot = oneShot
+            else:
+                self.oneShot.set(False)
+                # update checkbutton
+                self.checkOneShot.config(state=tk.NORMAL)
+        else:
+            self.e2s_sample.get_esli().OSC_OneShot = oneShot
         
     def _plus12dB_set(self, *args):
         self.e2s_sample.get_esli().playLevel12dB = self.plus12dB.get()
@@ -1908,10 +1946,7 @@ class SampleAllEditor(tk.Tk):
         if not self.sliceEditDialog:
             self.sliceEditDialog = SliceEditorDialog(self)
         smpl = self.sampleList.get_selected()
-        fmt = smpl.e2s_sample.get_fmt()
-        data = smpl.e2s_sample.get_data()
-        esli = smpl.e2s_sample.get_esli()
-        self.sliceEditDialog.sliceEditor.set_sample(fmt,data,esli)
+        self.sliceEditDialog.sliceEditor.set_sample(smpl)
         if self.system == 'Windows':
             def _on_mousewheel(event):
                 self.sliceEditDialog.sliceEditor.frame.canvas.yview_scroll(-1*(event.delta//120), "units")
