@@ -1062,7 +1062,6 @@ class SliceEditor(tk.Frame):
                 raise Exception("Unknown scroll unit: " + what)
 
     def set_sample(self, fmt, data, esli):
-        #todo: reset view point of vertical scroll
         self.esli = esli
         self.zoomVar.set('all')
         #compute zoom 'all' factor:
@@ -1103,6 +1102,10 @@ class SliceEditor(tk.Frame):
         self.numActiveStepsTrace = self.numActiveSteps.trace('w', self._numActiveStepsChanged)
         
         self.slicedRadioV.set(self.numActiveSteps.get()>0)
+
+        #reset view point of vertical scroll
+        self.frame.canvas.xview_moveto(0)
+        self.frame.canvas.yview_moveto(0)
 
     def _activeStepEdit(self, index):
         value = self.activeSteps[index].get()
