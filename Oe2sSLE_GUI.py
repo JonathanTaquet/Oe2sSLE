@@ -295,7 +295,6 @@ class WaveDisplay(tk.Canvas):
     """
     def on_motion(self,event):
         lineset = self.activeLineSet
-        #print(event.x,event.y)
         if lineset is not None:
             amp_active = 1 #lineset.loop_first is None
         
@@ -318,7 +317,6 @@ class WaveDisplay(tk.Canvas):
     def on_b1_press(self,event):
         self.drag=0
         lineset = self.activeLineSet
-        #print(event.x,event.y)
         if lineset is not None:
             amp_active = 1 #lineset.loop_first is None
         
@@ -684,7 +682,6 @@ class Slice:
             self.start.set(stop+1)
         if stop < self.attack.get():
             self.attack.set(stop)
-        print(stop-self.start.get()+1)
         self.esli.slices[self.sliceNum].length = stop-self.start.get()+1
         self.editor.wavDisplay.refresh()
 
