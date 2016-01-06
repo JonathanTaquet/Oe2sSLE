@@ -27,6 +27,7 @@ import math
 import platform
 import threading
 #import time
+import warnings
 
 import RIFF
 import e2s_sample_all as e2s
@@ -1168,10 +1169,11 @@ class SliceEditor(tk.Frame):
         self.slicedRadioV.set(self.numActiveSteps.get()>0)
 
     def play_start(self, sound):
-        if self.player is not None:
-            self.player.pause()
-
-        self.player = sound.play()
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            if self.player is not None:
+                self.player.pause()
+            self.player = sound.play()
 
     def play_stop(self):
         if self.player is not None:
@@ -1433,7 +1435,9 @@ class Sample(object):
         
         audio_format = pyglet.media.AudioFormat(riff_fmt.channels, riff_fmt.bitPerSample, riff_fmt.samplesPerSec)
         self.sound = Sound(self.e2s_sample.get_data().rawdata,audio_format)
-        self.sound.play()
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            self.sound.play()
         
 
 class SampleList(tk.Frame):
