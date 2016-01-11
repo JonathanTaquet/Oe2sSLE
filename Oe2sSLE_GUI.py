@@ -1849,6 +1849,41 @@ class SampleAllEditor(tk.Tk):
                     esli.playLogPeriod = 65535 if fmt.samplesPerSec == 0 else max(0, int(round(63132-math.log2(fmt.samplesPerSec)*3072)))
                     esli_chunk.header.size += len(esli_chunk)
                     sample.header.size += len(esli_chunk)
+
+                    # check if smpl chunk is used
+                    smpl_chunk = sample.RIFF.chunkList.get_chunk(b'smpl')
+                    if smpl_chunk:
+                        # use it to initialize loop point
+                        if smpl_chunk.data.numSampleLoops > 0:
+                            # todo: if several LoopData, propose to generate several wavs ?
+                            smpl_loop = smpl_chunk.data.loops[0]
+                            if smpl_loop.playCount != 1:
+                                # looping sample
+                                start = smpl_loop.start*fmt.blockAlign
+                                end = smpl_loop.end*fmt.blockAlign
+                                if start < end and end <= len(data) - fmt.blockAlign:
+                                    esli.OSC_LoopStartPoint_offset = start - esli.OSC_StartPoint_address
+                                    esli.OSC_OneShot = 0
+                                    esli.OSC_EndPoint_offset = end - esli.OSC_StartPoint_address
+                    # check if cue chunk is used
+                    cue_chunk = sample.RIFF.chunkList.get_chunk(b'cue ')
+                    if cue_chunk:
+                        num_cue_points = cue_chunk.data.numCuePoints
+                        num_slices = 0
+                        num_samples = len(data) // fmt.blockAlign
+                        for cue_point_num in range(num_cue_points):
+                            cue_point = cue_chunk.data.cuePoints[cue_point_num]
+                            if cue_point.fccChunk != b'data' or cue_point.sampleOffset >= num_samples:
+                                # unhandled cue_point
+                                continue
+                            else:
+                                esli.slices[num_slices].start = cue_point.sampleOffset
+                                esli.slices[num_slices].length = num_samples - cue_point.sampleOffset
+                                if num_slices > 0:
+                                    esli.slices[num_slices-1].length = esli.slices[num_slices].start - esli.slices[num_slices-1].start
+                                num_slices += 1
+                                if num_slices >= 64:
+                                    break
                 else:
                     esli = esli_chunk.data
 
