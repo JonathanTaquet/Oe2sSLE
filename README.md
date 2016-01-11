@@ -1,4 +1,4 @@
-# Open e2sSample.all Library Editor (Oe2sSLE)
+# Open e2sSample.all Library Editor (Oe2sSLE) for Electribe Sampler
 
 This is an editor for electribe sampler (e2s) sample library.
 It allows library management and supports sample loops and slices editing.
