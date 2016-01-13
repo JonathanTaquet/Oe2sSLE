@@ -148,11 +148,6 @@ def linspace(start,stop,num):
     for i in range(num):
         yield start+((stop-start)*i)/(num-1)
 
-def repeat(iterable, times):
-    for t in range(times):
-        for i in iterable:
-            yield i
-
 class WaveDisplay(tk.Canvas):
     class LineSet:
         def __init__(self, first, last, loop_first=None, attack_last=None, amplitude=None):
@@ -170,6 +165,7 @@ class WaveDisplay(tk.Canvas):
         self.width = self.winfo_reqwidth()
         
         self.toRefresh = False
+        self.refreshLineSetOnly = False
         self.scrollBar = None
 
         self.wav = [[int(20000*math.sin(x*2.*math.pi/self.width)) for x in range(self.width)]]*2
@@ -197,11 +193,11 @@ class WaveDisplay(tk.Canvas):
     def set_activeLineSet(self, activeLineSet=None):
         if self.activeLineSet != activeLineSet:
             self.activeLineSet=activeLineSet
-            self.refresh()
+            self.refresh(True)
     
     def add_lineSet(self, lineSet):
         self.lineSets.append(lineSet)
-        self.refresh()
+        self.refresh(True)
 
     def set_scrollBar(self, scrollBar):
         self.scrollBar = scrollBar
@@ -214,11 +210,11 @@ class WaveDisplay(tk.Canvas):
             raise Exception('bit per sample')
         num_chans = wave_fmt.channels
         num_samples = len(wave_data.rawdata)//2//num_chans
+        tot_num_samples = num_samples*num_chans
+        samples = struct.unpack('<'+str(tot_num_samples)+'h', wave_data.rawdata)
         self.wav = []
         for chan in range(num_chans):
-            self.wav.append(
-                [struct.unpack('<h', wave_data.rawdata[(s*num_chans+chan)*2:(s*num_chans+chan)*2+2])[0] for s in range(num_samples)]
-                )
+            self.wav.append(samples[chan:tot_num_samples:num_chans])
         self.dispFrom = 0
         self.dispTo = num_samples
         self.activeLineSet = None
@@ -375,13 +371,14 @@ class WaveDisplay(tk.Canvas):
         self.height = event.height
         self.refresh()
         
-    def refresh(self):
+    def refresh(self, line_set_only=False):
+        if self.refreshLineSetOnly and not line_set_only:
+            self.refreshLineSetOnly = False
         if not self.toRefresh:
             self.toRefresh=True
             self.after_idle(self.draw_wav)
         self.update_scrollBar()
-            
-       
+
     def update_scrollBar(self):
         if self.scrollBar:
             self.scrollBar.set(self.dispFrom/self.wav_length(), self.dispTo/self.wav_length())
@@ -404,42 +401,51 @@ class WaveDisplay(tk.Canvas):
             #header = b"P6 %d %d 255 " % (w, h)
             header = bytes("P6 %d %d 255 " % (w, h), "utf8")
             head_l = len(header)
-            ppm = bytearray(head_l+w*h*3)
-            ppm[0:head_l] = header
-            # init with bg color
-            ppm[head_l:] = repeat(self.bgColor, w*h)
-            # draw zero line(s)
-            if self.wav:
-                num_chans = self.num_channels()
-                for chan in range(num_chans):
-                    line=int((self.ampMax/self.ampTot+chan)*(h/num_chans))
-                    ppm[head_l+line*wstep:head_l+(line+1)*wstep] = repeat((127,127,127), w)
-            
-            # draw wav
-            if self.wav:
-                num_chans = self.num_channels()
-                for chan in range(num_chans):
-                    _smin=0
-                    _smax=0
-                    for x in range(w):
-                        start=max(0,int(fr+math.floor((to-fr)*(x)/w)))
-                        stop=min(self.wav_length(),max(start+1,int(fr+math.floor((to-fr)*(x+1.)/w))))
-                        if stop>start:
-                            __smin=min((self.wav[chan][i] for i in range(start,stop)))
-                            __smax=max((self.wav[chan][i] for i in range(start,stop)))
-                            smin=min(_smax,__smin)
-                            smax=max(_smin,__smax)
-                            _smin=__smin
-                            _smax=__smax
-                            
-                            pStart=int(((self.ampMax-smax)/self.ampTot+chan)*(h/num_chans))
-                            pStop =int(((self.ampMax-smin)/self.ampTot+chan)*(h/num_chans))+1
 
-                            ppm[head_l+x*3+wstep*pStart+0:head_l+x*3+wstep*pStop+0:wstep] = repeat((self.wavColor[0],),pStop-pStart)
-                            ppm[head_l+x*3+wstep*pStart+1:head_l+x*3+wstep*pStop+1:wstep] = repeat((self.wavColor[1],),pStop-pStart)
-                            ppm[head_l+x*3+wstep*pStart+2:head_l+x*3+wstep*pStop+2:wstep] = repeat((self.wavColor[2],),pStop-pStart)                    
+            if self.wav:
+                num_chans = self.num_channels()
+
+            if not self.refreshLineSetOnly:
+                self.refreshLineSetOnly = True
+                self.wav_ppm = bytearray(head_l+w*h*3)
+                ppm = self.wav_ppm
+                ppm[0:head_l] = header
+                # init with bg color
+                ppm[head_l:] = self.bgColor*(w*h)
+                # draw zero line(s)
+                if self.wav:
+                    for chan in range(num_chans):
+                        line=int((self.ampMax/self.ampTot+chan)*(h/num_chans))
+                        ppm[head_l+line*wstep:head_l+(line+1)*wstep] = (127,127,127)*w
+            
+                # draw wav
+                if self.wav:
+                    for chan in range(num_chans):
+                        _smin=0
+                        _smax=0
+                        for x in range(w):
+                            start=max(0,int(fr+math.floor((to-fr)*(x)/w)))
+                            stop=min(self.wav_length(),max(start+1,int(fr+math.floor((to-fr)*(x+1.)/w))))
+                            if stop>start:
+                                __smin=min(self.wav[chan][start:stop])
+                                __smax=max(self.wav[chan][start:stop])
+                                smin=min(_smax,__smin)
+                                smax=max(_smin,__smax)
+                                _smin=__smin
+                                _smax=__smax
+                            
+                                pStart=int(((self.ampMax-smax)/self.ampTot+chan)*(h/num_chans))
+                                pStop =int(((self.ampMax-smin)/self.ampTot+chan)*(h/num_chans))+1
+
+                                #for i in range(pStop-pStart):
+                                #    ppm[head_l+x*3+wstep*(i+pStart)+0:head_l+x*3+wstep*(i+pStart)+3] = self.wavColor
+                                ppm[head_l+x*3+wstep*pStart+0:head_l+x*3+wstep*pStop+0:wstep] = (self.wavColor[0],)*(pStop-pStart)
+                                ppm[head_l+x*3+wstep*pStart+1:head_l+x*3+wstep*pStop+1:wstep] = (self.wavColor[1],)*(pStop-pStart)
+                                ppm[head_l+x*3+wstep*pStart+2:head_l+x*3+wstep*pStop+2:wstep] = (self.wavColor[2],)*(pStop-pStart)                    
 
             # draw line sets
+            ppm = bytearray(head_l+w*h*3)
+            ppm[:] = self.wav_ppm
             for active in (False, True):
                 for lineSet in self.lineSets:
                     if active == (lineSet is self.activeLineSet):
@@ -466,13 +472,13 @@ class WaveDisplay(tk.Canvas):
                                     y0 = max(0,int((math.floor((self.ampTot-amp)/2)/self.ampTot+chan)*(h/num_chans)))
                                     y1 = min(h-1,int((math.floor((self.ampTot+amp)/2)/self.ampTot+chan)*(h/num_chans)))
                                     if active:
-                                        ppm[head_l+start_x*3+wstep*y0+0:head_l+(end_x+1)*3+wstep*y0+0:3] = repeat((255,),end_x-start_x+1)
-                                        ppm[head_l+start_x*3+wstep*y1+0:head_l+(end_x+1)*3+wstep*y1+0:3] = repeat((255,),end_x-start_x+1)
+                                        ppm[head_l+start_x*3+wstep*y0+0:head_l+(end_x+1)*3+wstep*y0+0:3] = (255,)*(end_x-start_x+1)
+                                        ppm[head_l+start_x*3+wstep*y1+0:head_l+(end_x+1)*3+wstep*y1+0:3] = (255,)*(end_x-start_x+1)
                                     else:
-                                        ppm[head_l+start_x*3+wstep*y0+0:head_l+(end_x+1)*3+wstep*y0+0:3] = repeat((127,),end_x-start_x+1)
-                                        ppm[head_l+start_x*3+wstep*y0+1:head_l+(end_x+1)*3+wstep*y0+1:3] = repeat((127,),end_x-start_x+1)
-                                        ppm[head_l+start_x*3+wstep*y1+0:head_l+(end_x+1)*3+wstep*y1+0:3] = repeat((127,),end_x-start_x+1)
-                                        ppm[head_l+start_x*3+wstep*y1+1:head_l+(end_x+1)*3+wstep*y1+1:3] = repeat((127,),end_x-start_x+1)
+                                        ppm[head_l+start_x*3+wstep*y0+0:head_l+(end_x+1)*3+wstep*y0+0:3] = (127,)*(end_x-start_x+1)
+                                        ppm[head_l+start_x*3+wstep*y0+1:head_l+(end_x+1)*3+wstep*y0+1:3] = (127,)*(end_x-start_x+1)
+                                        ppm[head_l+start_x*3+wstep*y1+0:head_l+(end_x+1)*3+wstep*y1+0:3] = (127,)*(end_x-start_x+1)
+                                        ppm[head_l+start_x*3+wstep*y1+1:head_l+(end_x+1)*3+wstep*y1+1:3] = (127,)*(end_x-start_x+1)
 
                         if fr <= mid <= to:
                             x = round((mid+0.5 - fr)*w/(to - fr))
@@ -480,10 +486,10 @@ class WaveDisplay(tk.Canvas):
                                 x = w-1
                             # some green
                             if active:
-                                ppm[head_l+x*3+1:head_l+x*3+wstep*h+1:wstep] = repeat((255,),h)
+                                ppm[head_l+x*3+1:head_l+x*3+wstep*h+1:wstep] = (255,)*h
                                 lineSet._mid_x=x
                             else:
-                                ppm[head_l+x*3+1:head_l+x*3+wstep*h+1:wstep] = repeat((127,),h)
+                                ppm[head_l+x*3+1:head_l+x*3+wstep*h+1:wstep] = (127,)*h
                         elif active:
                             lineSet._mid_x=round((mid+0.5 - fr)*w/(to - fr))
                                 
@@ -491,12 +497,12 @@ class WaveDisplay(tk.Canvas):
                             x = math.floor((first+0.25 - fr)*w/(to - fr))
                             # some green and red
                             if active:
-                                ppm[head_l+x*3+0:head_l+x*3+wstep*h+0:wstep] = repeat((255,),h)
-                                ppm[head_l+x*3+1:head_l+x*3+wstep*h+1:wstep] = repeat((255,),h)
+                                ppm[head_l+x*3+0:head_l+x*3+wstep*h+0:wstep] = (255,)*h
+                                ppm[head_l+x*3+1:head_l+x*3+wstep*h+1:wstep] = (255,)*h
                                 lineSet._first_x=x
                             else:
-                                ppm[head_l+x*3+0:head_l+x*3+wstep*h+0:wstep] = repeat((127,),h)
-                                ppm[head_l+x*3+1:head_l+x*3+wstep*h+1:wstep] = repeat((127,),h)
+                                ppm[head_l+x*3+0:head_l+x*3+wstep*h+0:wstep] = (127,)*h
+                                ppm[head_l+x*3+1:head_l+x*3+wstep*h+1:wstep] = (127,)*h
                         elif active:
                             lineSet._first_x=math.floor((first+0.25 - fr)*w/(to - fr))
                         
@@ -506,10 +512,10 @@ class WaveDisplay(tk.Canvas):
                                 x = w-1
                             # some red
                             if active:
-                                ppm[head_l+x*3+0:head_l+x*3+wstep*h+0:wstep] = repeat((255,),h)
+                                ppm[head_l+x*3+0:head_l+x*3+wstep*h+0:wstep] = (255,)*h
                                 lineSet._last_x=x
                             else:
-                                ppm[head_l+x*3+0:head_l+x*3+wstep*h+0:wstep] = repeat((127,),h)
+                                ppm[head_l+x*3+0:head_l+x*3+wstep*h+0:wstep] = (127,)*h
                         elif active:
                             lineSet._last_x=math.ceil((last+0.75 - fr)*w/(to - fr))
                 
@@ -643,13 +649,11 @@ class Slice:
     def _focus_in(self, event):
         if not self._selected:
             self.editor.wavDisplay.set_activeLineSet(self.lineSet)
-            self.editor.wavDisplay.refresh()
             self.selected = True
 
     def _focus_out(self, event):
         if self._selected:
             self.editor.wavDisplay.set_activeLineSet()
-            self.editor.wavDisplay.refresh()
             self.selected = False
 
     def _start_set(self, *args):
@@ -669,7 +673,7 @@ class Slice:
         # update the offsets
         self.esli.slices[self.sliceNum].length = self.stop.get()-start+1
         self.esli.slices[self.sliceNum].attack_length = self.attack.get()-start+1
-        self.editor.wavDisplay.refresh()
+        self.editor.wavDisplay.refresh(True)
 
     def _stop_set(self, *args):
         stop = self.stop.get()
@@ -684,7 +688,7 @@ class Slice:
         if stop < self.attack.get():
             self.attack.set(stop)
         self.esli.slices[self.sliceNum].length = stop-self.start.get()+1
-        self.editor.wavDisplay.refresh()
+        self.editor.wavDisplay.refresh(True)
 
     def _attack_set(self, *args):
         attack = self.attack.get()
@@ -700,7 +704,7 @@ class Slice:
             self.stop.set(attack)
 
         self.esli.slices[self.sliceNum].attack_length = attack-self.start.get()+1
-        self.editor.wavDisplay.refresh()
+        self.editor.wavDisplay.refresh(True)
 
     def _amplitude_set(self, *args):
         amp = self.amplitude.get()
@@ -712,7 +716,7 @@ class Slice:
             amp = 0
 
         self.esli.slices[self.sliceNum].amplitude = amp
-        self.editor.wavDisplay.refresh()
+        self.editor.wavDisplay.refresh(True)
 
 
     def _play(self, *args):
@@ -863,13 +867,11 @@ class NormalSampleOptions(tk.LabelFrame):
     def _focus_in(self, event):
         if not self._selected:
             self.editor.wavDisplay.set_activeLineSet(self.lineSet)
-            self.editor.wavDisplay.refresh()
             self.selected = True
 
     def _focus_out(self, event):
         if self._selected:
             self.editor.wavDisplay.set_activeLineSet()
-            self.editor.wavDisplay.refresh()
             self.selected = False
 
     def _start_set(self, *args):
@@ -891,7 +893,6 @@ class NormalSampleOptions(tk.LabelFrame):
         self.esli.OSC_EndPoint_offset = (self.stop.get()-start)*self.blockAlign
         
         self.editor.wavDisplay.set_activeLineSet(self.lineSet)
-        self.editor.wavDisplay.refresh()
 
 
     def _stop_set(self, *args):
@@ -917,7 +918,6 @@ class NormalSampleOptions(tk.LabelFrame):
             else:
                 self.smpl.oneShot.set(True)
         self.editor.wavDisplay.set_activeLineSet(self.lineSet)
-        self.editor.wavDisplay.refresh()
 
     def _loopStart_set(self, *args):
         if self.rootSet is None:
@@ -942,7 +942,7 @@ class NormalSampleOptions(tk.LabelFrame):
             else:
                 self.smpl.oneShot.set(True)
         self.editor.wavDisplay.set_activeLineSet(self.lineSet)
-        self.editor.wavDisplay.refresh()
+        self.editor.wavDisplay.refresh(True)
     
     def _playVolume_set(self, *args):
         playVolume = self.playVolume.get()
@@ -955,7 +955,7 @@ class NormalSampleOptions(tk.LabelFrame):
             playVolume = 0
 
         self.esli.playVolume = playVolume
-        self.editor.wavDisplay.refresh()
+        self.editor.wavDisplay.refresh(True)
 class SlicedSampleOptions(tk.LabelFrame):
     def __init__(self, parent, editor, *arg, **kwarg):
         super().__init__(parent, *arg, **kwarg)
