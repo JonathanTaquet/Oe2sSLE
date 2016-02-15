@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Copyright (C) 2015 Jonathan Taquet
+Copyright (C) 2015-2016 Jonathan Taquet
 
 This file is part of Oe2sSLE (Open e2sSample.all Library Editor).
 
@@ -1601,7 +1601,7 @@ Home Page : """)
         text.insert(tk.END,
 """
 
-Copyright (C) 2015 Jonathan Taquet
+Copyright (C) 2015-2016 Jonathan Taquet
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
