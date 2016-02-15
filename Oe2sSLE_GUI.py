@@ -35,7 +35,7 @@ from VerticalScrolledFrame import VerticalScrolledFrame
 
 import os.path
 
-import pyglet.media
+import sounddevice as sd
 
 import struct
 import webbrowser
@@ -75,56 +75,72 @@ class WaitDialog(tk.Toplevel):
     def close(self):
         pass
 
-class Sound(pyglet.media.StaticMemorySource):
-    def __init__(self,*args,**kw):
-        super(Sound,self).__init__(*args,**kw)
-        
-    def _get_queue_source(self):
+class Player:
+    def pause(self):
+        if self.stream and self.stream.active:
+            self.stream.stop()
         return self
 
-class LoopWaveSource(pyglet.media.StreamingSource):
+    def play(self):
+        if self.stream and self.stream.stopped:
+            self.stream.start()
+        return self
+
+class Sound(Player):
+    def __init__(self, data, fmt):
+        self.data = data
+        self.fmt = fmt
+        self._offset = 0
+
+        def callback(outdata, frames, time, status):
+            n_bytes=frames*fmt.blockAlign
+            to_read=min(n_bytes, len(self.data) - self._offset)
+            if not to_read:
+                raise sd.CallbackStop
+            outdata[0:to_read] = self.data[self._offset:self._offset+to_read]
+            self._offset += to_read
+            if to_read < n_bytes:
+                if to_read < n_bytes:
+                    outdata[to_read:n_bytes] = bytearray(n_bytes-to_read)
+
+        self.stream = sd.RawOutputStream(samplerate=fmt.samplesPerSec, channels=fmt.channels, dtype='int16', callback=callback)
+
+class LoopWaveSource(Player):
     def __init__(self, data, fmt, esli):
         self.data = data
         self.fmt = fmt
         self.esli = esli
         
-        self.audio_format = pyglet.media.AudioFormat(fmt.channels, fmt.bitPerSample, fmt.samplesPerSec)
-
         self._total_offset = 0
         self._offset = esli.OSC_StartPoint_address
         self._duration = 0
 
-    """
-    TODO: use esli.playVolume and esli.playLogScale
-    """
-    def get_audio_data(self, n_bytes):
-        n_read=0
-        data=bytearray(n_bytes)
-        end=self.esli.OSC_StartPoint_address + self.esli.OSC_EndPoint_offset#+self.fmt.blockAlign
-        while n_read < n_bytes:
-            to_read =min(n_bytes-n_read, end - self._offset)
-            data[n_read:n_read+to_read] = self.data[self._offset:self._offset+to_read]
-            n_read += to_read
-            self._offset += to_read
-            if self._offset == end:
-                if self.esli.OSC_LoopStartPoint_offset < self.esli.OSC_EndPoint_offset:
-                    self._offset = self.esli.OSC_StartPoint_address + self.esli.OSC_LoopStartPoint_offset
-                else:
-                    data[n_read:]=[]
-                    break
+        """
+        TODO: use esli.playVolume and esli.playLogScale
+        """
+        def callback(outdata, frames, time, status):
+            n_bytes=frames*fmt.blockAlign
+            n_read=0
+            data=bytearray(n_bytes)
+            end=self.esli.OSC_StartPoint_address + self.esli.OSC_EndPoint_offset#+self.fmt.blockAlign
+            while n_read < n_bytes:
+                to_read =min(n_bytes-n_read, end - self._offset)
+                outdata[n_read:n_read+to_read] = self.data[self._offset:self._offset+to_read]
+                n_read += to_read
+                self._offset += to_read
+                if self._offset == end:
+                    if self.esli.OSC_LoopStartPoint_offset < self.esli.OSC_EndPoint_offset:
+                        self._offset = self.esli.OSC_StartPoint_address + self.esli.OSC_LoopStartPoint_offset
+                    else:
+                        outdata[n_read:n_bytes]=bytearray(n_bytes-n_read)
+                        break
 
-        if not n_read:
-            return None
+            if not n_read:
+                raise sd.CallbackStop
          
-        self._total_offset += n_read
+            self._total_offset += n_read
 
-        timestamp = float(self._total_offset) / self.audio_format.bytes_per_second
-        duration = float(n_read) / self.audio_format.bytes_per_second
-
-        return pyglet.media.AudioData(bytes(data), len(data), timestamp, duration, [])
-
-    def seek(self, timestamp):
-        pass
+        self.stream = sd.RawOutputStream(samplerate=fmt.samplesPerSec, channels=fmt.channels, dtype='int16', callback=callback)
 
 class ROSpinbox(tk.Spinbox):
     def __init__(self, parent, *arg, **kwarg):
@@ -720,11 +736,10 @@ class Slice:
 
 
     def _play(self, *args):
-        audio_format = pyglet.media.AudioFormat(self.fmt.channels, self.fmt.bitPerSample, self.fmt.samplesPerSec)
         start=self.start.get()*self.fmt.blockAlign
         stop=self.stop.get()*self.fmt.blockAlign
         if stop > 0:
-            self.editor.play_start(Sound(self.data[start:stop],audio_format))
+            self.editor.play_start(Sound(self.data[start:stop],self.fmt))
 
 class FrameSlices(tk.Frame):
     def __init__(self, master, editor, *arg, **kwarg):
@@ -1433,8 +1448,7 @@ class Sample(object):
         if riff_fmt.formatTag != RIFF.WAVE_fmt_.WAVE_FORMAT_PCM:
             raise Exception()
         
-        audio_format = pyglet.media.AudioFormat(riff_fmt.channels, riff_fmt.bitPerSample, riff_fmt.samplesPerSec)
-        self.sound = Sound(self.e2s_sample.get_data().rawdata,audio_format)
+        self.sound = Sound(self.e2s_sample.get_data().rawdata,riff_fmt)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             self.sound.play()
