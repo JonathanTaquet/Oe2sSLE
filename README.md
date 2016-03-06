@@ -5,10 +5,10 @@ It allows library management and supports sample loops and slices editing.
 You can also remove or replace factory samples with your own.
 
 This code was developped for python 3.5, but shall be compatible with python 3.4 (because py2exe do no support python 3.5 yet).
-Graphical user interface is using tkinter to reduce external dependencies. The only requierement is the media part of
-[pyglet](https://bitbucket.org/pyglet/pyglet/wiki/Home) for audio sample listening (tested with pyglet 1.2.4):
+Graphical user interface is using tkinter to reduce external dependencies. The only requierement is
+[pyaudio](https://people.csail.mit.edu/hubert/pyaudio/) for audio sample listening (tested with pyaudio v0.2.9):
 
-`pip install pyglet`
+`pip install pyaudio`
 
 
 Startup file is Oe2sSLE_GUI.py
