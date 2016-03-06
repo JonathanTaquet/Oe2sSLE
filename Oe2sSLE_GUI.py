@@ -540,12 +540,12 @@ class SampleNumSpinbox(ROSpinbox):
     def __init__(self, parent, *arg, **kwarg):
         super().__init__(parent, *arg, **kwarg)
         
-        self.bind("<Shift-Up>",lambda event: self.big_increase(99))
-        self.bind("<Shift-Down>",lambda event: self.big_increase(-99))
-        self.bind("<Prior>",lambda event: self.big_increase(1000))
-        self.bind("<Next>",lambda event: self.big_increase(-1000))
-        self.bind("<Shift-Prior>",lambda event: self.big_increase(10000))
-        self.bind("<Shift-Next>",lambda event: self.big_increase(-10000))
+        self.bind("<Shift-Up>",lambda event: self.big_increase(98))
+        self.bind("<Shift-Down>",lambda event: self.big_increase(-98))
+        self.bind("<Prior>",lambda event: self.big_increase(999))
+        self.bind("<Next>",lambda event: self.big_increase(-999))
+        self.bind("<Shift-Prior>",lambda event: self.big_increase(9999))
+        self.bind("<Shift-Next>",lambda event: self.big_increase(-9999))
 
     def big_increase(self, increment):
         _curr=int(self.get())
