@@ -43,6 +43,15 @@ import webbrowser
 
 Oe2sSLE_VERSION = (0,0,6)
 
+# for pyIntaller bundled executable
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except AttributeError:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 class WaitDialog(tk.Toplevel):
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
@@ -1744,7 +1753,7 @@ class SampleAllEditor(tk.Tk):
         self.sizeEntry.pack(side=tk.RIGHT)
         tk.Label(fr,text='Total Data Size : ').pack(side=tk.RIGHT)
 
-        self.pledgieIcon=tk.PhotoImage(file="images/pledgie-small.gif")
+        self.pledgieIcon=tk.PhotoImage(file=resource_path("images/pledgie-small.gif"))
         self.buttonDonate = tk.Button(fr, command=self.donate, image=self.pledgieIcon)
         self.buttonDonate.pack(side=tk.LEFT)
         
@@ -2035,7 +2044,7 @@ if __name__ == '__main__':
 
     # Create a window
     app = SampleAllEditor()
-    playIcon=tk.PhotoImage(file="images/play.gif")
-    stopIcon=tk.PhotoImage(file="images/stop.gif")
+    playIcon=tk.PhotoImage(file=resource_path("images/play.gif"))
+    stopIcon=tk.PhotoImage(file=resource_path("images/stop.gif"))
     app.mainloop()
     audio.terminate()
