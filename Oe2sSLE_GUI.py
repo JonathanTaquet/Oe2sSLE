@@ -916,7 +916,7 @@ class NormalSampleOptions(tk.LabelFrame):
         self.esli.OSC_EndPoint_offset = (self.stop.get()-start)*self.blockAlign
         
         self.editor.wavDisplay.set_activeLineSet(self.lineSet)
-
+        self.editor.wavDisplay.refresh(True)
 
     def _stop_set(self, *args):
         if self.rootSet is None:
@@ -941,6 +941,7 @@ class NormalSampleOptions(tk.LabelFrame):
             else:
                 self.smpl.oneShot.set(True)
         self.editor.wavDisplay.set_activeLineSet(self.lineSet)
+        self.editor.wavDisplay.refresh(True)
 
     def _loopStart_set(self, *args):
         if self.rootSet is None:
