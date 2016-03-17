@@ -28,6 +28,7 @@ import platform
 import threading
 #import time
 import warnings
+import sys
 
 import RIFF
 import e2s_sample_all as e2s
@@ -51,6 +52,29 @@ def resource_path(relative_path):
         base_path = os.path.abspath(".")
 
     return os.path.join(base_path, relative_path)
+
+class logger:
+    def __init__(self):
+        self.file = None
+        self.stderr = sys.stderr
+        self.stdout = sys.stdout
+        sys.stderr=self
+        sys.stdout=self
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if self.file:
+            self.file.close()
+        sys.stderr = self.stderr
+        sys.stdout = self.stdout
+
+    def write(self, data):
+        if not self.file:
+            self.file = open('Oe2sSLE.log', 'w')
+        self.file.write(data)
+        self.file.flush()
 
 class WaitDialog(tk.Toplevel):
     def __init__(self, parent, *args, **kwargs):
@@ -2042,10 +2066,11 @@ class SampleAllEditor(tk.Tk):
 
 
 if __name__ == '__main__':
-
-    # Create a window
-    app = SampleAllEditor()
-    playIcon=tk.PhotoImage(file=resource_path("images/play.gif"))
-    stopIcon=tk.PhotoImage(file=resource_path("images/stop.gif"))
-    app.mainloop()
-    audio.terminate()
+    # redirect outputs to a logger
+    with logger() as log:
+        # Create a window
+        app = SampleAllEditor()
+        playIcon=tk.PhotoImage(file=resource_path("images/play.gif"))
+        stopIcon=tk.PhotoImage(file=resource_path("images/stop.gif"))
+        app.mainloop()
+        audio.terminate()
