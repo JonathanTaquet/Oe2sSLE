@@ -66,6 +66,7 @@ class logger:
 
     def __exit__(self, exc_type, exc_value, traceback):
         if self.file:
+            self.file.write('-- Logger closed --')
             self.file.close()
         sys.stderr = self.stderr
         sys.stdout = self.stdout
@@ -1800,7 +1801,14 @@ class SampleAllEditor(tk.Tk):
         filename = tk.filedialog.askopenfilename(parent=self.root,title="Select e2s Sample.all file to open",filetypes=(('.all Files','*.all'),('All Files','*.*')))
         if filename:
             def fct():
-                samplesAll = e2s.e2s_sample_all(filename=filename)
+                try:
+                    samplesAll = e2s.e2s_sample_all(filename=filename)
+                except Exception as e:
+                    tk.messagebox.showwarning(
+                    "Open",
+                    "Cannot use this file:\n{}\nError message:\n{}".format(filename, e)
+                    )
+                    return
                 
                 self.sampleList.clear()
                 for sample in samplesAll.samples:
@@ -1830,7 +1838,10 @@ class SampleAllEditor(tk.Tk):
                     try:
                         sampleAll.save(filename)
                     except Exception as e:
-                        print(e)
+                        tk.messagebox.showwarning(
+                        "Save as",
+                        "Cannot save to this file:\n{}\nError message:\n{}".format(filename, e)
+                        )
                 wd = WaitDialog(self.root)
                 wd.run(fct)
         
@@ -1953,7 +1964,14 @@ class SampleAllEditor(tk.Tk):
         filename = tk.filedialog.askopenfilename(parent=self.root,title="Select e2sSample.all file to import",filetypes=(('.all Files','*.all'),('All Files','*.*')))
         if filename:        
             def fct():
-                samplesAll = e2s.e2s_sample_all(filename=filename)
+                try:
+                    samplesAll = e2s.e2s_sample_all(filename=filename)
+                except Exception as e:
+                    tk.messagebox.showwarning(
+                    "Import e2sSample.all",
+                    "Cannot use this file:\n{}\nError message:\n{}".format(filename, e)
+                    )
+                    return
                 
                 for sample in samplesAll.samples:
                     esli = sample.get_esli()
