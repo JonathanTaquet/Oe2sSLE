@@ -21,6 +21,7 @@ along with Oe2sSLE.  If not, see <http://www.gnu.org/licenses/>
 import struct
 import RIFF
 import warnings
+import traceback
 
 from RIFF.smpl import RIFF_smpl
 from RIFF.cue  import RIFF_cue
@@ -391,13 +392,13 @@ class e2s_sample_all:
                 # skip null pointers
                 # TODO: check if addr can be Odd (for electribe)
                 if riffAddr:
-                    f.seek(riffAddr)
                     try:
+                        f.seek(riffAddr)
                         sample = e2s_sample(f)
                         self.samples.append(sample)
-                    except ValueError as e:
-                        warnings.warn(e.args[0])
-                        raise e
+                    except:
+                        warnings.warn('Recovering from an error while reading a sample')
+                        traceback.print_exc()
 
     def save(self, filename):
         # RIFF addresses up to 0x1000 in the file
