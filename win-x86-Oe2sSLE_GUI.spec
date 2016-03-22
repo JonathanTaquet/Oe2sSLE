@@ -37,8 +37,8 @@ exe = EXE(pyz,
           a.binaries,
           a.zipfiles,
           a.datas,
-          name='Oe2sSLE_GUI',
+          name='Oe2sSLE-0.0.8-win-x86',
           debug=False,
           strip=False,
           upx=True,
-          console=True )
+          console=False )
