@@ -382,6 +382,7 @@ class e2s_sample_all:
             self.load(kw['filename'])
     
     def load(self, filename):
+        self._loadErrors = 0
         with open(filename,'rb') as f:
             # header
             if f.read(16) != b"e2s sample all\x1A\x00":
@@ -397,6 +398,7 @@ class e2s_sample_all:
                         sample = e2s_sample(f)
                         self.samples.append(sample)
                     except:
+                        self._loadErrors += 1
                         warnings.warn('Recovering from an error while reading a sample')
                         traceback.print_exc()
 

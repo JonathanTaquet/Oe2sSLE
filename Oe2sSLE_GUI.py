@@ -1809,6 +1809,16 @@ class SampleAllEditor(tk.Tk):
                     "Cannot use this file:\n{}\nError message:\n{}".format(filename, e)
                     )
                     return
+
+                if samplesAll._loadErrors:
+                    tk.messagebox.showwarning(
+                    "Open",
+                    ("Recovered from {} error(s) in this file:\n{}\n"
+                     "The file is probably corrupted or you found a bug.\n"
+                     "See log file for details."
+                    )
+                    .format(samplesAll._loadErrors, filename)
+                    )
                 
                 self.sampleList.clear()
                 for sample in samplesAll.samples:
@@ -1972,6 +1982,15 @@ class SampleAllEditor(tk.Tk):
                     "Cannot use this file:\n{}\nError message:\n{}".format(filename, e)
                     )
                     return
+                if samplesAll._loadErrors:
+                    tk.messagebox.showwarning(
+                    "Import e2sSample.all",
+                    ("Recovered from {} error(s) in this file:\n{}\n"
+                     "The file is probably corrupted or you found a bug.\n"
+                     "See log file for details."
+                    )
+                    .format(samplesAll._loadErrors, filename)
+                    )
                 
                 for sample in samplesAll.samples:
                     esli = sample.get_esli()
