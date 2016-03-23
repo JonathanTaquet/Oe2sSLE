@@ -73,7 +73,7 @@ class logger:
 
     def write(self, data):
         if not self.file:
-            self.file = open('Oe2sSLE.log', 'w')
+            self.file = open('Oe2sSLE.log', 'a')
         self.file.write(data)
         self.file.flush()
 
