@@ -66,7 +66,7 @@ class logger:
 
     def __exit__(self, exc_type, exc_value, traceback):
         if self.file:
-            self.file.write('-- Logger closed --')
+            self.file.write('-- Logger closed --\n')
             self.file.close()
         sys.stderr = self.stderr
         sys.stdout = self.stdout
