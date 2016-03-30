@@ -24,7 +24,7 @@ import warnings
 warnings.simplefilter("always")
 
 class ChunkHeader:
-    head_fmt = '<4sL'
+    head_fmt = '<4sI'
     head_len = struct.calcsize(head_fmt)
 
     def __init__(self, file=None, **kw):
@@ -119,7 +119,7 @@ class WAVE_fmt_(ChunkData):
     IBM_FORMAT_ALAW  = 0x0102 # IBM a-law format
     IBM_FORMAT_ADPCM = 0x0103 # IBM AVC Adaptive Differential Pulse Code Modulation format
     
-    common_fields_fmt = '<HHLLH'
+    common_fields_fmt = '<HHIIH'
     specific_fields = {
         WAVE_FORMAT_PCM  : ('<H', ['bitPerSample'])
     }

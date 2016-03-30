@@ -24,29 +24,29 @@ import warnings
 import RIFF
 
 class RIFF_cue(RIFF.ChunkData):
-    _dataMinFmt = '<L'
+    _dataMinFmt = '<I'
     _dataMinSize = struct.calcsize(_dataMinFmt)
     
     class CuePoint:
-        _dataFmt = '<2L4s3L'
+        _dataFmt = '<2I4s3I'
         _dataSize = struct.calcsize(_dataFmt)
         
         def __init__(self, cue_master, cue_point_num):
             self.fields=dict()
             self.cue = cue_master
             offset=cue_master._dataMinSize+cue_point_num*self._dataSize
-            self.fields['identifier']=(offset, '<L')
-            offset+=struct.calcsize('L')
-            self.fields['position']=(offset, '<L')
-            offset+=struct.calcsize('L')
+            self.fields['identifier']=(offset, '<I')
+            offset+=struct.calcsize('I')
+            self.fields['position']=(offset, '<I')
+            offset+=struct.calcsize('I')
             self.fields['fccChunk']=(offset, '<4s')
             offset+=struct.calcsize('4s')
-            self.fields['chunkStart']=(offset, '<L')
-            offset+=struct.calcsize('L')
-            self.fields['blockStart']=(offset, '<L')
-            offset+=struct.calcsize('L')
-            self.fields['sampleOffset']=(offset, '<L')
-            offset+=struct.calcsize('L')
+            self.fields['chunkStart']=(offset, '<I')
+            offset+=struct.calcsize('I')
+            self.fields['blockStart']=(offset, '<I')
+            offset+=struct.calcsize('I')
+            self.fields['sampleOffset']=(offset, '<I')
+            offset+=struct.calcsize('I')
             
     
         def __getattr__(self, name):
@@ -74,8 +74,8 @@ class RIFF_cue(RIFF.ChunkData):
         self.fields = dict()
         self.rawdata = bytearray(RIFF_cue._dataMinSize)
         offset = 0
-        self.fields['numCuePoints']=(offset, '<L')
-        offset += struct.calcsize('L')
+        self.fields['numCuePoints']=(offset, '<I')
+        offset += struct.calcsize('I')
 
         self.cuePoints = []
         

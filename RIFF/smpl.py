@@ -24,11 +24,11 @@ import warnings
 import RIFF
 
 class RIFF_smpl(RIFF.ChunkData):
-    _dataMinFmt = '<9L'
+    _dataMinFmt = '<9I'
     _dataMinSize = struct.calcsize(_dataMinFmt)
     
     class LoopData:
-        _dataFmt = '<6L'
+        _dataFmt = '<6I'
         _dataSize = struct.calcsize(_dataFmt)
         
         """
@@ -46,18 +46,18 @@ class RIFF_smpl(RIFF.ChunkData):
             self.fields=dict()
             self.smpl = smpl_master
             offset=smpl_master._dataMinSize+loop_num*self._dataSize
-            self.fields['identifier']=(offset, '<L')
-            offset+=struct.calcsize('L')
-            self.fields['type']=(offset, '<L')
-            offset+=struct.calcsize('L')
-            self.fields['start']=(offset, '<L')
-            offset+=struct.calcsize('L')
-            self.fields['end']=(offset, '<L')
-            offset+=struct.calcsize('L')
-            self.fields['fraction']=(offset, '<L')
-            offset+=struct.calcsize('L')
-            self.fields['playCount']=(offset, '<L')
-            offset+=struct.calcsize('L')
+            self.fields['identifier']=(offset, '<I')
+            offset+=struct.calcsize('I')
+            self.fields['type']=(offset, '<I')
+            offset+=struct.calcsize('I')
+            self.fields['start']=(offset, '<I')
+            offset+=struct.calcsize('I')
+            self.fields['end']=(offset, '<I')
+            offset+=struct.calcsize('I')
+            self.fields['fraction']=(offset, '<I')
+            offset+=struct.calcsize('I')
+            self.fields['playCount']=(offset, '<I')
+            offset+=struct.calcsize('I')
             
     
         def __getattr__(self, name):
@@ -85,24 +85,24 @@ class RIFF_smpl(RIFF.ChunkData):
         self.fields = dict()
         self.rawdata = bytearray(RIFF_smpl._dataMinSize)
         offset = 0
-        self.fields['manufacturer']=(offset, '<L')
-        offset += struct.calcsize('L')
-        self.fields['product']=(offset, '<L')
-        offset += struct.calcsize('L')
-        self.fields['samplePeriod']=(offset, '<L')
-        offset += struct.calcsize('L')
-        self.fields['MIDIUnityNote']=(offset, '<L')
-        offset += struct.calcsize('L')
-        self.fields['MIDIPitchFraction']=(offset, '<L')
-        offset += struct.calcsize('L')
-        self.fields['SMPTEFormat']=(offset, '<L')
-        offset += struct.calcsize('L')
-        self.fields['SMPTEOffset']=(offset, '<L')
-        offset += struct.calcsize('L')
-        self.fields['numSampleLoops']=(offset, '<L')
-        offset += struct.calcsize('L')
-        self.fields['numAdditionalBytes']=(offset, '<L')
-        offset += struct.calcsize('L')
+        self.fields['manufacturer']=(offset, '<I')
+        offset += struct.calcsize('I')
+        self.fields['product']=(offset, '<I')
+        offset += struct.calcsize('I')
+        self.fields['samplePeriod']=(offset, '<I')
+        offset += struct.calcsize('I')
+        self.fields['MIDIUnityNote']=(offset, '<I')
+        offset += struct.calcsize('I')
+        self.fields['MIDIPitchFraction']=(offset, '<I')
+        offset += struct.calcsize('I')
+        self.fields['SMPTEFormat']=(offset, '<I')
+        offset += struct.calcsize('I')
+        self.fields['SMPTEOffset']=(offset, '<I')
+        offset += struct.calcsize('I')
+        self.fields['numSampleLoops']=(offset, '<I')
+        offset += struct.calcsize('I')
+        self.fields['numAdditionalBytes']=(offset, '<I')
+        offset += struct.calcsize('I')
 
         self.loops = []
         

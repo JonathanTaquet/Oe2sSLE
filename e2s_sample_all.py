@@ -112,15 +112,15 @@ class RIFF_korg_esli(RIFF.ChunkData):
         def __init__(self, esli_master, slice_num):
             self.fields=dict()
             self.esli = esli_master
-            offset=self.esli.fields['slicesData'][0]+slice_num*struct.calcsize('4L')
-            self.fields['start']=(offset, '<L')
-            offset+=struct.calcsize('L')
-            self.fields['length']=(offset, '<L')
-            offset+=struct.calcsize('L')
-            self.fields['attack_length']=(offset, '<L')
-            offset+=struct.calcsize('L')
-            self.fields['amplitude']=(offset, '<L')
-            offset+=struct.calcsize('L')
+            offset=self.esli.fields['slicesData'][0]+slice_num*struct.calcsize('4I')
+            self.fields['start']=(offset, '<I')
+            offset+=struct.calcsize('I')
+            self.fields['length']=(offset, '<I')
+            offset+=struct.calcsize('I')
+            self.fields['attack_length']=(offset, '<I')
+            offset+=struct.calcsize('I')
+            self.fields['amplitude']=(offset, '<I')
+            offset+=struct.calcsize('I')
             
     
         def __getattr__(self, name):
@@ -179,18 +179,18 @@ class RIFF_korg_esli(RIFF.ChunkData):
         offset += struct.calcsize('1s')
         self.fields['_27_UFix']=(offset, '1s')
         offset += struct.calcsize('1s')
-        self.fields['OSC_StartPoint_address']=(offset, '<L')
-        offset += struct.calcsize('L')
-        self.fields['OSC_LoopStartPoint_offset']=(offset, '<L')
-        offset += struct.calcsize('L')
-        self.fields['OSC_EndPoint_offset']=(offset, '<L')
-        offset += struct.calcsize('L')
+        self.fields['OSC_StartPoint_address']=(offset, '<I')
+        offset += struct.calcsize('I')
+        self.fields['OSC_LoopStartPoint_offset']=(offset, '<I')
+        offset += struct.calcsize('I')
+        self.fields['OSC_EndPoint_offset']=(offset, '<I')
+        offset += struct.calcsize('I')
         self.fields['OSC_OneShot']=(offset, '?')
         offset += struct.calcsize('?')
         self.fields['_35_3C_UFix']=(offset, '7s')
         offset += struct.calcsize('7s')
-        self.fields['WAV_dataSize']=(offset, '<L')
-        offset += struct.calcsize('L')
+        self.fields['WAV_dataSize']=(offset, '<I')
+        offset += struct.calcsize('I')
         self.fields['useChan0_UFix']=(offset, 'B')
         offset += struct.calcsize('B')
         self.fields['useChan1']=(offset, '?')
@@ -199,16 +199,16 @@ class RIFF_korg_esli(RIFF.ChunkData):
         offset += struct.calcsize('?')
         self.fields['_43_48_UFix']=(offset, '5s')
         offset += struct.calcsize('5s')
-        self.fields['samplingFreq']=(offset, '<L')
-        offset += struct.calcsize('L')
+        self.fields['samplingFreq']=(offset, '<I')
+        offset += struct.calcsize('I')
         self.fields['_4C_UFix']=(offset, '1s')
         offset += struct.calcsize('1s')
         self.fields['sampleTune']=(offset, '<b')
         offset += struct.calcsize('b')
         self.fields['OSC_0index1']=(offset, '<H')
         offset += struct.calcsize('H')
-        self.fields['slicesData']=(offset, '<256L')
-        offset += struct.calcsize('256L')
+        self.fields['slicesData']=(offset, '<256I')
+        offset += struct.calcsize('256I')
         self.fields['slicesActiveSteps']=(offset, '64s')
         offset += struct.calcsize('64s')
         self.fields['slicingNumSteps']=(offset, 'B')
@@ -388,7 +388,7 @@ class e2s_sample_all:
             if f.read(16) != b"e2s sample all\x1A\x00":
                 raise ValueError("unhandled file format")
             # RIFF addresses up to 0x1000 in the file
-            riffAddrs = struct.unpack("<"+"L"*1020,f.read(4080))
+            riffAddrs = struct.unpack("<"+"I"*1020,f.read(4080))
             for riffAddr in riffAddrs:
                 # skip null pointers
                 # TODO: check if addr can be Odd (for electribe)
@@ -419,7 +419,7 @@ class e2s_sample_all:
             # header
             f.write(b"e2s sample all\x1A\x00")
             for riffAddr in riffAddrs:
-                f.write(struct.pack("<L", riffAddr[0]))
+                f.write(struct.pack("<I", riffAddr[0]))
             for riffAddr in riffAddrs:
                 if riffAddr[0]:
                     diff = riffAddr[0]-f.tell()
