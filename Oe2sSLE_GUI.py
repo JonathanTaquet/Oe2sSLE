@@ -42,7 +42,7 @@ audio = pa.PyAudio()
 import struct
 import webbrowser
 
-Oe2sSLE_VERSION = (0,0,8)
+Oe2sSLE_VERSION = (0,0,9)
 
 # for pyIntaller bundled executable
 def resource_path(relative_path):
