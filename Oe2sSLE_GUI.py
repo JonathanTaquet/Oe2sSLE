@@ -1397,7 +1397,9 @@ class Sample(object):
     
     def _name_set(self, *args):
         # TODO verify which encoding is used by electribe sampler
-        self.e2s_sample.get_esli().OSC_name = bytes(self.name.get().encode('utf-8'))
+        esli = self.e2s_sample.get_esli()
+        esli.OSC_name = bytes(self.name.get().encode('utf-8'))
+        self.name.set(esli.OSC_name.decode("utf-8").rstrip('\x00'))
     
     def _oscNum_set(self, *args):
         oscNum = self.oscNum.get()
