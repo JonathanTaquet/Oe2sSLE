@@ -1396,7 +1396,8 @@ class Sample(object):
         self.tuneVal_trace = self.tuneVal.trace('w', self._tuneVal_set)        
     
     def _name_set(self, *args):
-        self.e2s_sample.get_esli().OSC_name = bytes(self.name.get())
+        # TODO verify which encoding is used by electribe sampler
+        self.e2s_sample.get_esli().OSC_name = bytes(self.name.get().encode('utf-8'))
     
     def _oscNum_set(self, *args):
         oscNum = self.oscNum.get()
