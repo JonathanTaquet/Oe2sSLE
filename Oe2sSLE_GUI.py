@@ -1878,7 +1878,7 @@ class SampleAllEditor(tk.Tk):
                 if fmt.formatTag != fmt.WAVE_FORMAT_PCM:
                     tk.messagebox.showwarning(
                     "Import WAV",
-                    "Cannot use this file:\n{}\nWAV format must be PCM".format(filename)
+                    "Cannot use this file:\n{}\nWAV format must be WAVE_FORMAT_PCM".format(filename)
                     )
                     continue
                     
