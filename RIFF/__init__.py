@@ -114,10 +114,17 @@ class Chunk:
   otherFieldsRAW is used to store RAW values of unknown fields
 """
 class WAVE_fmt_(ChunkData):
-    WAVE_FORMAT_PCM  = 0x0001 # Microsoft Pulse Code Modulation (PCM) forma
-    IBM_FORMAT_MULAW = 0x0101 # IBM mu-law format
-    IBM_FORMAT_ALAW  = 0x0102 # IBM a-law format
-    IBM_FORMAT_ADPCM = 0x0103 # IBM AVC Adaptive Differential Pulse Code Modulation format
+    WAVE_FORMAT_UNKNOWN        = 0x0000 # Microsoft: Unknown format
+    WAVE_FORMAT_PCM            = 0x0001 # Microsoft: Pulse Code Modulation (PCM) format
+    WAVE_FORMAT_ADPCM          = 0x0002 # Microsoft: Adaptive Delta Pulse Code Modulation (ADPCM) format
+    WAVE_FORMAT_IEEE_FLOAT     = 0x0003 # Microsoft: IEEE754: range (+1, -1] 32-bit/64-bit format as defined by MSVC++ float/double type IEEE float
+    WAVE_FORMAT_ALAW           = 0x0006 # Microsoft: 8-bit ITU-T G.711 A-law
+    WAVE_FORMAT_MULAW          = 0x0007 # Microsoft: 8-bit ITU-T G.711 µ-law
+    IBM_FORMAT_MULAW           = 0x0101 # IBM: µ-law format
+    IBM_FORMAT_ALAW            = 0x0102 # IBM: a-law format
+    IBM_FORMAT_ADPCM           = 0x0103 # IBM AVC Adaptive Differential Pulse Code Modulation format
+    WAVE_FORMAT_EXTENSIBLE     = 0xFFFE # Microsoft: Extensible Wave format
+    WAVE_FORMAT_DEVELOPMENT    = 0xFFFF # Microsoft: Development format
     
     common_fields_fmt = '<HHIIH'
     specific_fields = {
