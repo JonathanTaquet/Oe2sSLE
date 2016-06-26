@@ -33,6 +33,7 @@ import sys
 import RIFF
 import e2s_sample_all as e2s
 from VerticalScrolledFrame import VerticalScrolledFrame
+import wav_tools
 
 import os.path
 
@@ -1862,6 +1863,7 @@ class SampleAllEditor(tk.Tk):
     def import_sample(self):
         filenames = tk.filedialog.askopenfilenames(parent=self.root,title="Select WAV file(s) to import",filetypes=(('Wav Files','*.wav'), ('All Files','*.*')))
         def fct():
+            converted = [[],[]] # (8 bits, 24 bits)
             for filename in filenames:
                 try:
                     with open(filename, 'rb') as f:
@@ -1883,11 +1885,21 @@ class SampleAllEditor(tk.Tk):
                     continue
                     
                 if fmt.bitPerSample != 16:
-                    tk.messagebox.showwarning(
-                    "Import WAV",
-                    "Cannot use this file:\n{}\nWAV format must use 16 bits per sample.\nConvert it before importing it.".format(filename)
-                    )
-                    continue
+                    if fmt.bitPerSample == 8:
+                        wav_tools.wav_pcm_8b_to_16b(sample)
+                        converted[0] += [filename]
+                    elif fmt.bitPerSample == 24:
+                        wav_tools.wav_pcm_24b_to_16b(sample)
+                        converted[1] += [filename]
+                    else:
+                        tk.messagebox.showwarning(
+                        "Import WAV",
+                        "Cannot use this file:\n{}\nWAV format must preferably use 16 bits per sample.\n" +
+                        "8 bits and old 24 bits per sample are also supported but will be converted to 16 bits.\n"
+                        "Convert your file before importing it.".format(filename)
+                        )
+                        continue
+                    fmt = sample.get_fmt()
                 
                 if not sample.RIFF.chunkList.get_chunk(b'korg'):
                     korg_data=e2s.RIFF_korg()
@@ -1969,7 +1981,13 @@ class SampleAllEditor(tk.Tk):
                     "Cannot use this file:\n{}\nToo many samples.".format(filename)
                     )
                     break
-                    
+            if not all(n_conv == [] for n_conv in converted):
+                tk.messagebox.showinfo(
+                    "Import WAV",
+                    ("{} file(s) converted from 8 bits to 16 bits.\n".format(len(converted[0])) if len(converted[0]) else "") +
+                    ("{} file(s) converted from 24 bits to 16 bits.\n".format(len(converted[1])) if len(converted[1]) else "")
+                    )
+
         wd = WaitDialog(self.root)
         wd.run(fct)
                 

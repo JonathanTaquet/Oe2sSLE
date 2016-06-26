@@ -352,6 +352,7 @@ class e2s_sample:
         self.RIFF = RIFF.Form(file,self.header,registeredForms={b'WAVE':RIFF_korgWAVEChunkList})
     
     def write(self, file):
+        self.update_header()
         self.header.write(file)
         self.RIFF.write(file)
         
@@ -363,6 +364,14 @@ class e2s_sample:
     
     def get_fmt(self):
         return self.RIFF.chunkList.get_chunk(b'fmt ').data
+
+    def get_chunk(self, id):
+        return self.RIFF.chunkList.get_chunk(id)
+
+
+    def update_header(self):
+        self.header.size = len(self.RIFF)
+
 
     def get_clean_copy(self):
         copy = e2s_sample()

@@ -101,8 +101,11 @@ class Chunk:
         if len(self.data)&1:
             file.read(1)
 
-    def write(self, file):
+    def update_header(self):
         self.header.size = len(self.data)
+
+    def write(self, file):
+        self.update_header()
         self.header.write(file)
         self.data.write(file)
         # align to word size
