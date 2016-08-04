@@ -1494,16 +1494,9 @@ class Sample(object):
 
 
     def play(self):
-        riff_fmt = self.e2s_sample.get_fmt()
-        if riff_fmt.formatTag != RIFF.WAVE_fmt_.WAVE_FORMAT_PCM:
-            raise Exception()
+        # TODO: have a single wav player for the whole application
+        self.master.play(self.e2s_sample)
         
-        self.sound = Sound(self.e2s_sample.get_data().rawdata,riff_fmt)
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            self.sound.play()
-        
-
 class SampleList(tk.Frame):
     def __init__(self, *arg, **kwarg):
         super().__init__(*arg, **kwarg)
@@ -1525,6 +1518,8 @@ class SampleList(tk.Frame):
         self.samples = []
         
         self.canvas_name = arg[0].winfo_parent()
+
+        self.sound = None
         
     def get_next_free_sample_index(self):
         max=17
@@ -1638,6 +1633,19 @@ class SampleList(tk.Frame):
             
     def remove_selected(self):
         self.remove(self.selectV.get())
+
+    def play(self, e2s_sample):
+        riff_fmt = e2s_sample.get_fmt()
+        if riff_fmt.formatTag != RIFF.WAVE_fmt_.WAVE_FORMAT_PCM:
+            raise Exception()
+
+        if self.sound is not None:
+            self.sound.pause()
+        self.sound = Sound(e2s_sample.get_data().rawdata,riff_fmt)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            self.sound.play()
+
         
 class About(tk.Toplevel):
     def __init__(self, parent, *args, **kwargs):
