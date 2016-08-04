@@ -1313,7 +1313,7 @@ class Sample(object):
         self.check12dB = tk.Checkbutton(self.master, variable=self.plus12dB)
         self.entryTune = ROSpinbox(self.master, from_=-63, to=63, width=3, format='%2.0f', textvariable=self.tuneVal)
         self.buttonPlay = tk.Button(self.master, image=playIcon, command=self.play)
-        self.samplingFreqEntry = tk.Entry(self.master, width=8, textvariable=self.samplingFreq, state=tk.DISABLED, justify=tk.RIGHT)
+        self.samplingFreqEntry = SampleNumSpinbox(self.master, width=8, textvariable=self.samplingFreq, justify=tk.RIGHT, command=self._samplingFreq_command)
         self.durationEntry = tk.Entry(self.master, width=8, textvariable=self.duration, state=tk.DISABLED, justify=tk.RIGHT)
         self.checkStereo = tk.Checkbutton(self.master, variable=self.stereo, state=tk.DISABLED)
         self.sizeEntry = tk.Entry(self.master, width=8, textvariable=self.smpSize, state=tk.DISABLED, justify=tk.RIGHT)
@@ -1355,6 +1355,7 @@ class Sample(object):
         
         
         self.entryOscNum.config(from_=lineNum+19 if lineNum+19<422 else lineNum+19+79, to=999)
+        self.samplingFreqEntry.config(from_=1, to=9999999)
 
     def move_to_lineNum(self, lineNum):
         self.set_lineNum(lineNum)
@@ -1465,6 +1466,17 @@ class Sample(object):
     def _tuneVal_set(self, *args):
         self.e2s_sample.get_esli().sampleTune = self.tuneVal.get()
     
+    def _samplingFreq_command(self, *ars):
+        sFreq = self.samplingFreq.get()
+        esli = self.e2s_sample.get_esli()
+        fmt = self.e2s_sample.get_fmt()
+        data = self.e2s_sample.get_data()
+        esli.samplingFreq = sFreq
+        fmt.samplesPerSec = sFreq
+        fmt.avgBytesPerSec = sFreq*fmt.blockAlign
+        self.duration.set("{:.4f}".format(len(data)/fmt.avgBytesPerSec if fmt.avgBytesPerSec else 0))
+
+
     def exchange_with(self, other):
         # swap samples
         self.e2s_sample, other.e2s_sample = other.e2s_sample, self.e2s_sample
