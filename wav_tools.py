@@ -22,6 +22,8 @@ import RIFF
 import e2s_sample_all
 
 import struct
+import copy
+import itertools
 
 def wav_pcm_8b_to_16b(e2s_sample):
     # checks
@@ -68,4 +70,33 @@ def wav_pcm_24b_to_16b(e2s_sample):
     # TODO: update cue points chunkStart and blockStart if used later
 
     return e2s_sample
-        
+
+"""
+resample a too high frequency samples for playback preview
+"""
+import array
+def wav_resample_preview(rawdata, fmt, max_smpl_per_sec):
+    n_taps = 3
+    freq = fmt.samplesPerSec
+    data = array.array('h',rawdata)
+    if fmt.formatTag != RIFF.WAVE_fmt_.WAVE_FORMAT_PCM:
+        raise Exception('format tag')
+    if fmt.bitPerSample != 16:
+        raise Exception('bit per sample')
+    if fmt.channels == 0:
+        raise Exception('0 channels')
+    n_chan = fmt.channels
+    while int(freq) > max_smpl_per_sec:
+        n_smpl = len(data)//n_chan
+        wav = [data[chan::n_chan] for chan in range(n_chan)]
+        if n_smpl%2 == 1:
+            for chan in range(n_chan):
+                wav[chan].extend([wav[chan][-1]]) # dublicate last sample to have a even number of sample
+            n_smpl += 1
+        data = array.array('h',(x for w in wav for x in ([(w[0]+w[1])//2] if n_smpl > 1 else []) + [(a+(b+c)//2)//2 for a, b, c in zip(w[2::2], w[1::2], w[3::2])] ))
+        freq /= 2
+
+    res_fmt = copy.deepcopy(fmt)
+    res_fmt.samplesPerSec = int(freq)
+    res_fmt.bytesPerSec = res_fmt.samplesPerSec*2*n_chan
+    return (data.tobytes(), res_fmt)

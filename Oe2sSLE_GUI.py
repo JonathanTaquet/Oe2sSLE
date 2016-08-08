@@ -126,6 +126,8 @@ class Player:
 
 class Sound(Player):
     def __init__(self, data, fmt):
+        if fmt.samplesPerSec > 192000:
+            data, fmt = wav_tools.wav_resample_preview(data, fmt, 192000)
         self.data = data
         self.fmt = fmt
         self._offset = 0
