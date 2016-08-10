@@ -43,16 +43,9 @@ audio = pa.PyAudio()
 import struct
 import webbrowser
 
+import GUI.res
+
 Oe2sSLE_VERSION = (0,0,10)
-
-# for pyIntaller bundled executable
-def resource_path(relative_path):
-    try:
-        base_path = sys._MEIPASS
-    except AttributeError:
-        base_path = os.path.abspath(".")
-
-    return os.path.join(base_path, relative_path)
 
 class logger:
     def __init__(self):
@@ -633,7 +626,7 @@ class Slice:
         self.entryStop = SampleNumSpinbox(self.master, width=10, from_=-1, textvariable=self.stop, state='readonly')
         self.entryAttack = SampleNumSpinbox(self.master, width=10, from_=-1, textvariable=self.attack, state='readonly')
         self.entryAmplitude = SampleNumSpinbox(self.master, width=10, from_=0, textvariable=self.amplitude, state='readonly')
-        self.buttonPlay = tk.Button(self.master, image=playIcon, command=self._play)
+        self.buttonPlay = tk.Button(self.master, image=GUI.res.playIcon, command=self._play)
         
         self._selected=False
         self.entryStart.bind("<FocusIn>",self._focus_in,add="+")
@@ -830,9 +823,9 @@ class NormalSampleOptions(tk.LabelFrame):
         self.loopStartEntry.grid(row=2, column=3)
         self.playVolumeEntry = SampleNumSpinbox(self, width=10, from_=0, to=65535, textvariable=self.playVolume, state='readonly')
         self.playVolumeEntry.grid(row=2, column=4)        
-        self.buttonPlay = tk.Button(self, image=playIcon, command=self.play_start)
+        self.buttonPlay = tk.Button(self, image=GUI.res.playIcon, command=self.play_start)
         self.buttonPlay.grid(row=2,column=5)
-        self.buttonStop = tk.Button(self, image=stopIcon, command=self.play_stop)
+        self.buttonStop = tk.Button(self, image=GUI.res.stopIcon, command=self.play_stop)
         self.buttonStop.grid(row=2,column=6)
         
         self._selected=False
@@ -1314,7 +1307,7 @@ class Sample(object):
         self.checkOneShot = tk.Checkbutton(self.master, variable=self.oneShot)
         self.check12dB = tk.Checkbutton(self.master, variable=self.plus12dB)
         self.entryTune = ROSpinbox(self.master, from_=-63, to=63, width=3, format='%2.0f', textvariable=self.tuneVal)
-        self.buttonPlay = tk.Button(self.master, image=playIcon, command=self.play)
+        self.buttonPlay = tk.Button(self.master, image=GUI.res.playIcon, command=self.play)
         self.samplingFreqEntry = SampleNumSpinbox(self.master, width=8, textvariable=self.samplingFreq, justify=tk.RIGHT, command=self._samplingFreq_command)
         self.durationEntry = tk.Entry(self.master, width=8, textvariable=self.duration, state=tk.DISABLED, justify=tk.RIGHT)
         self.checkStereo = tk.Checkbutton(self.master, variable=self.stereo, state=tk.DISABLED)
@@ -1726,6 +1719,7 @@ class SampleAllEditor(tk.Tk):
 
     def __init__(self, *args, **kw):
         self.root = tk.Tk.__init__(self, *args, **kw)
+        GUI.res.init()
 
         root = self.root
 
@@ -1805,8 +1799,7 @@ class SampleAllEditor(tk.Tk):
         self.sizeEntry.pack(side=tk.RIGHT)
         tk.Label(fr,text='Total Data Size : ').pack(side=tk.RIGHT)
 
-        self.pledgieIcon=tk.PhotoImage(file=resource_path("images/pledgie-small.gif"))
-        self.buttonDonate = tk.Button(fr, command=self.donate, image=self.pledgieIcon)
+        self.buttonDonate = tk.Button(fr, command=self.donate, image=GUI.res.pledgieIcon)
         self.buttonDonate.pack(side=tk.LEFT)
         
         self.buttonAbout=tk.Button(fr, text="About", command=self.about)
@@ -2152,7 +2145,5 @@ if __name__ == '__main__':
     with logger() as log:
         # Create a window
         app = SampleAllEditor()
-        playIcon=tk.PhotoImage(file=resource_path("images/play.gif"))
-        stopIcon=tk.PhotoImage(file=resource_path("images/stop.gif"))
         app.mainloop()
         audio.terminate()
