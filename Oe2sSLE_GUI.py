@@ -27,7 +27,6 @@ import math
 import platform
 import threading
 #import time
-import warnings
 import sys
 
 import RIFF
@@ -37,8 +36,7 @@ import wav_tools
 
 import os.path
 
-import pyaudio as pa
-audio = pa.PyAudio()
+import audio
 
 import struct
 import webbrowser
@@ -103,73 +101,6 @@ class WaitDialog(tk.Toplevel):
 
     def close(self):
         pass
-
-class Player:
-    def pause(self):
-        if self.stream and self.stream.is_active():
-            self.stream.stop_stream()
-            self.stream.close()
-            self.stream = None
-        return self
-
-    def play(self):
-        if self.stream and self.stream.is_stopped():
-            self.stream.start_stream()
-        return self
-
-class Sound(Player):
-    def __init__(self, data, fmt):
-        if fmt.samplesPerSec > 192000:
-            data, fmt = wav_tools.wav_resample_preview(data, fmt, 192000)
-        self.data = data
-        self.fmt = fmt
-        self._offset = 0
-
-        def callback(indata, frames, time, status):
-            n_bytes=frames*fmt.blockAlign
-            to_read=min(n_bytes, len(self.data) - self._offset)
-            outdata = self.data[self._offset:self._offset+to_read]
-            self._offset += to_read
-            return (outdata,pa.paContinue)
-
-        self.stream = audio.open(format=pa.paInt16, channels=fmt.channels, rate=fmt.samplesPerSec, output=True, stream_callback=callback)
-
-class LoopWaveSource(Player):
-    def __init__(self, data, fmt, esli):
-        self.data = data
-        self.fmt = fmt
-        self.esli = esli
-        
-        self._total_offset = 0
-        self._offset = esli.OSC_StartPoint_address
-        self._duration = 0
-
-        """
-        TODO: use esli.playVolume and esli.playLogScale
-        """
-        def callback(indata, frames, time, status):
-            n_bytes=frames*fmt.blockAlign
-            n_read=0
-            data=bytearray(n_bytes)
-            end=self.esli.OSC_StartPoint_address + self.esli.OSC_EndPoint_offset#+self.fmt.blockAlign
-            while n_read < n_bytes:
-                to_read =min(n_bytes-n_read, end - self._offset)
-                data[n_read:n_read+to_read] = self.data[self._offset:self._offset+to_read]
-                n_read += to_read
-                self._offset += to_read
-                if self._offset == end:
-                    if self.esli.OSC_LoopStartPoint_offset < self.esli.OSC_EndPoint_offset:
-                        self._offset = self.esli.OSC_StartPoint_address + self.esli.OSC_LoopStartPoint_offset
-                    else:
-                        break
-
-            if not n_read:
-                return (bytes(data),pa.paComplete)
-         
-            self._total_offset += n_read
-            return (bytes(data),pa.paContinue)
-
-        self.stream = audio.open(format=pa.paInt16, channels=fmt.channels, rate=fmt.samplesPerSec, output=True, stream_callback=callback)
 
 class ROSpinbox(tk.Spinbox):
     def __init__(self, parent, *arg, **kwarg):
@@ -768,7 +699,7 @@ class Slice:
         start=self.start.get()*self.fmt.blockAlign
         stop=self.stop.get()*self.fmt.blockAlign
         if stop > 0:
-            self.editor.play_start(Sound(self.data[start:stop],self.fmt))
+            audio.player.play_start(audio.Sound(self.data[start:stop],self.fmt))
 
 class FrameSlices(tk.Frame):
     def __init__(self, master, editor, *arg, **kwarg):
@@ -848,15 +779,10 @@ class NormalSampleOptions(tk.LabelFrame):
         #    self.sound.pause()
     
         # TODO: verrify meaning of each offset in esli (+ or - 1 or not )
-
-        if self.fmt.formatTag != RIFF.WAVE_fmt_.WAVE_FORMAT_PCM:
-            raise Exception()
-        
-        #self.sound = LoopWaveSource(self.data,self.fmt,self.esli).play()
-        self.editor.play_start(LoopWaveSource(self.data,self.fmt,self.esli))
+        audio.player.play_start(audio.LoopWaveSource(self.data,self.fmt,self.esli))
 
     def play_stop(self):
-        self.editor.play_stop()
+        audio.player.play_stop()
 
     def set_sample(self, smpl):
         self.smpl = smpl
@@ -1015,7 +941,6 @@ class SliceEditor(tk.Frame):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.player=None
         self.esli=None
 
         # Some config width height settings
@@ -1213,18 +1138,6 @@ class SliceEditor(tk.Frame):
         self.esli.slicesNumActiveSteps = self.numActiveSteps.get()
         self.slicedRadioV.set(self.numActiveSteps.get()>0)
 
-    def play_start(self, sound):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            if self.player is not None:
-                self.player.pause()
-            self.player = sound.play()
-
-    def play_stop(self):
-        if self.player is not None:
-            self.player.pause()
-            self.player = None
-        
 class SliceEditorDialog(tk.Toplevel):
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
@@ -1243,7 +1156,7 @@ class SliceEditorDialog(tk.Toplevel):
         self.focus_set()
         
     def on_delete(self):
-        self.sliceEditor.play_stop()
+        audio.player.play_stop()
         self.withdraw()
         
         parent=self.master
@@ -1514,8 +1427,6 @@ class SampleList(tk.Frame):
         
         self.canvas_name = arg[0].winfo_parent()
 
-        self.sound = None
-        
     def get_next_free_sample_index(self):
         max=17
         for sample in self.samples:
@@ -1631,16 +1542,7 @@ class SampleList(tk.Frame):
 
     def play(self, e2s_sample):
         riff_fmt = e2s_sample.get_fmt()
-        if riff_fmt.formatTag != RIFF.WAVE_fmt_.WAVE_FORMAT_PCM:
-            raise Exception()
-
-        if self.sound is not None:
-            self.sound.pause()
-        self.sound = Sound(e2s_sample.get_data().rawdata,riff_fmt)
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            self.sound.play()
-
+        audio.player.play_start(audio.Sound(e2s_sample.get_data().rawdata,riff_fmt))
         
 class About(tk.Toplevel):
     def __init__(self, parent, *args, **kwargs):
