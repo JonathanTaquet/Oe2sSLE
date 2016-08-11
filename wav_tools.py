@@ -24,6 +24,7 @@ import e2s_sample_all
 import struct
 import copy
 import itertools
+import sys
 
 def wav_pcm_8b_to_16b(e2s_sample):
     # checks
@@ -85,6 +86,9 @@ def wav_resample_preview(rawdata, fmt, max_smpl_per_sec):
         raise Exception('bit per sample')
     if fmt.channels == 0:
         raise Exception('0 channels')
+    if sys.byteorder == 'big':
+        # wav file is little endian
+        data.byteswap()
     n_chan = fmt.channels
     while int(freq) > max_smpl_per_sec:
         n_smpl = len(data)//n_chan
@@ -99,4 +103,7 @@ def wav_resample_preview(rawdata, fmt, max_smpl_per_sec):
     res_fmt = copy.deepcopy(fmt)
     res_fmt.samplesPerSec = int(freq)
     res_fmt.bytesPerSec = res_fmt.samplesPerSec*2*n_chan
+    if sys.byteorder == 'big':
+        # wav file is little endian
+        data.byteswap()
     return (data.tobytes(), res_fmt)
