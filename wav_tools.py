@@ -109,3 +109,13 @@ def wav_resample_preview(rawdata, fmt, max_smpl_per_sec):
         # wav file is little endian
         data.byteswap()
     return (data.tobytes(), res_fmt)
+
+def wav_stereo_to_mono(st_data, w_left, w_right):
+    wl, wr = (w_left/(abs(w_left)+abs(w_right)), w_right/(abs(w_left)+abs(w_right)))
+    data = array.array('h',st_data)
+    if sys.byteorder == 'big':
+        data.byteswap()
+    data = array.array('h',[int(wl*l+wr*r) for l, r in zip(data[0::2],data[1::2])])
+    if sys.byteorder == 'big':
+        data.byteswap()
+    return data.tobytes()

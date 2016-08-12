@@ -42,6 +42,7 @@ import struct
 import webbrowser
 
 import GUI.res
+from GUI.stereo_to_mono import StereoToMonoDialog
 
 Oe2sSLE_VERSION = (0,0,10)
 
@@ -1223,7 +1224,7 @@ class Sample(object):
         self.buttonPlay = tk.Button(self.master, image=GUI.res.playIcon, command=self.play)
         self.samplingFreqEntry = SampleNumSpinbox(self.master, width=8, textvariable=self.samplingFreq, justify=tk.RIGHT, command=self._samplingFreq_command)
         self.durationEntry = tk.Entry(self.master, width=8, textvariable=self.duration, state=tk.DISABLED, justify=tk.RIGHT)
-        self.checkStereo = tk.Checkbutton(self.master, variable=self.stereo, state=tk.DISABLED)
+        self.checkStereo = tk.Checkbutton(self.master, variable=self.stereo, command=self._stereo_command)
         self.sizeEntry = tk.Entry(self.master, width=8, textvariable=self.smpSize, state=tk.DISABLED, justify=tk.RIGHT)
 
         self.set_lineNum(lineNum)
@@ -1384,6 +1385,16 @@ class Sample(object):
         fmt.avgBytesPerSec = sFreq*fmt.blockAlign
         self.duration.set("{:.4f}".format(len(data)/fmt.avgBytesPerSec if fmt.avgBytesPerSec else 0))
 
+    def _stereo_command(self,*args):
+        # don't switch immediately
+        self.stereo.set(not self.stereo.get())
+        if not self.stereo.get():
+            # mono can't be set to stereo
+            return
+        dialog = StereoToMonoDialog(self.checkStereo, self.e2s_sample)
+        self.master.wait_window(dialog)
+        fmt = self.e2s_sample.get_fmt()
+        self.stereo.set(fmt.channels > 1)
 
     def exchange_with(self, other):
         # swap samples
