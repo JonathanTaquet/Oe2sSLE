@@ -38,14 +38,15 @@ class StereoToMonoDialog(tk.Toplevel):
         self.e2s_sample = e2s_sample
         self.esli = e2s_sample_all.RIFF_korg_esli()
         self.esli.rawdata[:] = e2s_sample.get_esli().rawdata[:]
-        self.fmt = copy.deepcopy(e2s_sample.get_fmt())
+        prev_fmt = e2s_sample.get_fmt()
+        self.fmt = copy.deepcopy(prev_fmt)
         self.fmt.channels=1
-        self.fmt.avgBytesPerSec = self.fmt.avgBytesPerSec // 2
-        self.fmt.blockAlign = self.fmt.blockAlign // 2
-        self.esli.OSC_StartPoint_address = self.esli.OSC_StartPoint_address // 2
-        self.esli.OSC_LoopStartPoint_offset = self.esli.OSC_LoopStartPoint_offset // 2
-        self.esli.OSC_EndPoint_offset = self.esli.OSC_EndPoint_offset // 2
-        self.esli.WAV_dataSize = self.esli.WAV_dataSize // 2
+        self.fmt.avgBytesPerSec = self.fmt.avgBytesPerSec // prev_fmt.channels
+        self.fmt.blockAlign = self.fmt.blockAlign // prev_fmt.channels
+        self.esli.OSC_StartPoint_address = self.esli.OSC_StartPoint_address // prev_fmt.channels
+        self.esli.OSC_LoopStartPoint_offset = self.esli.OSC_LoopStartPoint_offset // prev_fmt.channels
+        self.esli.OSC_EndPoint_offset = self.esli.OSC_EndPoint_offset // prev_fmt.channels
+        self.esli.WAV_dataSize = self.esli.WAV_dataSize // prev_fmt.channels
         self.esli.useChan1 = False
         self.w = (0,0)
         self.data = None
@@ -100,11 +101,15 @@ class StereoToMonoDialog(tk.Toplevel):
         self.deiconify()
 
     def update_data(self):
-        mix = self.mix_var.get()
-        w = ((1 - mix)/2, 1 - (1 - mix)/2)
-        if self.w != (w):
-            self.w=w
-            self.data=wav_tools.wav_stereo_to_mono(self.e2s_sample.get_data().rawdata,*self.w)
+        num_chans = self.e2s_sample.get_fmt().channels
+        if num_chans == 1:
+            self.data=self.e2s_sample.get_data().rawdata
+        else:
+            mix = self.mix_var.get()
+            w = ((1 - mix)/2, 1 - (1 - mix)/2) + (0,)*(num_chans-2)
+            if self.w != (w):
+                self.w=w
+                self.data=wav_tools.wav_mchan_to_mono(self.e2s_sample.get_data().rawdata, self.w)
 
     def play(self):
         self.update_data()

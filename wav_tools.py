@@ -110,12 +110,14 @@ def wav_resample_preview(rawdata, fmt, max_smpl_per_sec):
         data.byteswap()
     return (data.tobytes(), res_fmt)
 
-def wav_stereo_to_mono(st_data, w_left, w_right):
-    wl, wr = (w_left/(abs(w_left)+abs(w_right)), w_right/(abs(w_left)+abs(w_right)))
-    data = array.array('h',st_data)
+def wav_mchan_to_mono(mc_data, w):
+    c = len(w)
+    ws = sum( (abs(x) for x in w) )
+    w = tuple( (x/ws for x in w) )
+    data = array.array('h',mc_data)
     if sys.byteorder == 'big':
         data.byteswap()
-    data = array.array('h',[int(wl*l+wr*r) for l, r in zip(data[0::2],data[1::2])])
+    data =array.array('h',[int(sum([x[i]*w[i] for i in range(c)])) for x in zip( *(data[i::c] for i in range(c)))])
     if sys.byteorder == 'big':
         data.byteswap()
     return data.tobytes()
