@@ -66,6 +66,8 @@ class LoopWaveSource(Player):
         if fmt.formatTag != RIFF.WAVE_fmt_.WAVE_FORMAT_PCM:
             raise Exception()
 
+        if fmt.samplesPerSec > 192000:
+            data, fmt = wav_tools.wav_resample_preview(data, fmt, 192000)
         self.data = data
         self.fmt = fmt
         self.esli = esli
