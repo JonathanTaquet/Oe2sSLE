@@ -92,17 +92,19 @@ def wav_resample_preview(rawdata, fmt, max_smpl_per_sec):
     n_chan = fmt.channels
     while int(freq) > max_smpl_per_sec:
         n_smpl = len(data)//n_chan
-        wav = [data[chan::n_chan] for chan in range(n_chan)]
+        wav = [list(data[chan::n_chan]) for chan in range(n_chan)]
         if n_smpl%2 == 1:
             for chan in range(n_chan):
                 wav[chan].extend([wav[chan][-1]]) # dublicate last sample to have a even number of sample
             n_smpl += 1
-        data = array.array('h',(x for w in wav for x in ([(w[0]+w[1])//2] if n_smpl > 1 else []) + [(a+(b+c)//2)//2 for a, b, c in zip(w[2::2], w[1::2], w[3::2])] ))
+        for w in wav:
+            w[:] = ([(w[0]+w[1])//2] if n_smpl > 1 else []) + [(a+(b+c)//2)//2 for a, b, c in zip(w[2::2], w[1::2], w[3::2])]
+        data = array.array('h', [smp for msmp in zip(*wav) for smp in msmp])
         freq /= 2
 
     res_fmt = copy.deepcopy(fmt)
     res_fmt.samplesPerSec = int(freq)
-    res_fmt.bytesPerSec = res_fmt.samplesPerSec*2*n_chan
+    res_fmt.avgBytesPerSec = res_fmt.samplesPerSec*res_fmt.blockAlign
     if sys.byteorder == 'big':
         # wav file is little endian
         data.byteswap()
