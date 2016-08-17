@@ -44,7 +44,7 @@ import GUI.res
 from GUI.stereo_to_mono import StereoToMonoDialog
 from GUI.wait_dialog import WaitDialog
 
-Oe2sSLE_VERSION = (0,0,10)
+Oe2sSLE_VERSION = (0,0,11)
 
 class logger:
     def __init__(self):
