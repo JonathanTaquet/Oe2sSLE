@@ -28,6 +28,8 @@ import GUI.res
 import RIFF
 import wav_tools
 
+from GUI.wait_dialog import WaitDialog
+
 class StereoToMonoDialog(tk.Toplevel):
     def __init__(self, parent, e2s_sample, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
@@ -109,7 +111,10 @@ class StereoToMonoDialog(tk.Toplevel):
             w = ((1 - mix)/2, 1 - (1 - mix)/2) + (0,)*(num_chans-2)
             if self.w != (w):
                 self.w=w
-                self.data=wav_tools.wav_mchan_to_mono(self.e2s_sample.get_data().rawdata, self.w)
+                def action():
+                    self.data=wav_tools.wav_mchan_to_mono(self.e2s_sample.get_data().rawdata, self.w)
+                wd = WaitDialog(self.parent)
+                wd.run(action)
 
     def play(self):
         self.update_data()
