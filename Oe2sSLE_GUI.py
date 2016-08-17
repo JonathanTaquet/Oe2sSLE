@@ -1395,6 +1395,9 @@ class Sample(object):
         self.master.wait_window(dialog)
         fmt = self.e2s_sample.get_fmt()
         self.stereo.set(fmt.channels > 1)
+        data = self.e2s_sample.get_data()
+        self.smpSize.set(len(data))
+        self.master.update_WAVDataSize()
 
     def exchange_with(self, other):
         # swap samples
@@ -1477,6 +1480,9 @@ class SampleList(tk.Frame):
             return self.samples[self.selectV.get()]
         else:
             return None
+
+    def update_WAVDataSize(self):
+        self.WAVDataSize.set(sum( (s.smpSize.get() for s in self.samples) ))
     
     def add_new(self, e2s_sample):
         self.samples.append(Sample(self,len(self.samples),e2s_sample))
