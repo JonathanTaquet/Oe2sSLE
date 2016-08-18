@@ -27,6 +27,12 @@ import warnings
 audio = pa.PyAudio()
 
 class Player:
+    def __init__(self):
+        self.stream = None
+
+    def __del__(self):
+        self.pause()
+
     def pause(self):
         if self.stream and self.stream.is_active():
             self.stream.stop_stream()
