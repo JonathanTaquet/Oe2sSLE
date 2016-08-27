@@ -1348,6 +1348,8 @@ class Sample(object):
         fmt = self.e2s_sample.get_fmt()
         data = self.e2s_sample.get_data()
         esli.samplingFreq = sFreq
+        # by default play speed is same as indicated by Frequency
+        esli.playLogPeriod = 65535 if sFreq == 0 else max(0, int(round(63132-math.log2(sFreq)*3072)))
         fmt.samplesPerSec = sFreq
         fmt.avgBytesPerSec = sFreq*fmt.blockAlign
         self.duration.set("{:.4f}".format(len(data)/fmt.avgBytesPerSec if fmt.avgBytesPerSec else 0))
