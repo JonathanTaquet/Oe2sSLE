@@ -1231,7 +1231,8 @@ class Sample(object):
         
         
         self.entryOscNum.config(from_=lineNum+19 if lineNum+19<422 else lineNum+19+79, to=999)
-        self.samplingFreqEntry.config(from_=1, to=9999999)
+        # RIFF_korg_esli.playLogPeriod has a 0.5814686990855805 to 1536036.6940220615 frequency range
+        self.samplingFreqEntry.config(from_=1, to=1536036)
 
     def move_to_lineNum(self, lineNum):
         self.set_lineNum(lineNum)
