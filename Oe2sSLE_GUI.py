@@ -79,14 +79,14 @@ class ROSpinbox(tk.Spinbox):
         self.bind("<FocusOut>",self._focusout)
         self.bind("<Button-1>",lambda event: self.focus_set())
         
-        self.defaultbg = self.cget('readonlybackground')
+        self.defaultrobg = self.cget('readonlybackground')
         self._focusout()
         
     def _focusin(self, event=None):
         self.config(readonlybackground="#C8C8C8")
         
     def _focusout(self, event=None):
-        self.config(readonlybackground=self.defaultbg)
+        self.config(readonlybackground=self.defaultrobg)
 
 def linspace(start,stop,num):
     for i in range(num):
