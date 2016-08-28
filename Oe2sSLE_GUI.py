@@ -46,7 +46,7 @@ from GUI.wait_dialog import WaitDialog
 
 import utils
 
-Oe2sSLE_VERSION = (0,0,11)
+from version import Oe2sSLE_VERSION
 
 class logger:
     def __init__(self):
