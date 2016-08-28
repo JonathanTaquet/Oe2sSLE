@@ -44,6 +44,8 @@ import GUI.res
 from GUI.stereo_to_mono import StereoToMonoDialog
 from GUI.wait_dialog import WaitDialog
 
+import utils
+
 Oe2sSLE_VERSION = (0,0,11)
 
 class logger:
@@ -467,7 +469,15 @@ class WaveDisplay(tk.Canvas):
 
 class SampleNumSpinbox(ROSpinbox):
     def __init__(self, parent, *arg, **kwarg):
+        self.SNScommand=kwarg.get('command')
+        self.SNSvar=kwarg.get('textvariable')
+        if self.SNSvar:
+            self.SNSvarString=tk.StringVar()
+            self.SNSvarString.set(self.SNSvar.get())
+            kwarg['textvariable'] = self.SNSvarString
         super().__init__(parent, *arg, **kwarg)
+        self.config(state=tk.NORMAL)
+        self.defaultbg =  self.cget('background')
         
         self.bind("<Shift-Up>",lambda event: self.big_increase(98))
         self.bind("<Shift-Down>",lambda event: self.big_increase(-98))
@@ -475,6 +485,31 @@ class SampleNumSpinbox(ROSpinbox):
         self.bind("<Next>",lambda event: self.big_increase(-999))
         self.bind("<Shift-Prior>",lambda event: self.big_increase(9999))
         self.bind("<Shift-Next>",lambda event: self.big_increase(-9999))
+
+        if self.SNSvar:
+            self._safeSet=False
+            self.SNSvar_trace = self.SNSvar.trace('w', self._var_set)
+            self.SNSvarString_trace = self.SNSvarString.trace('w', self._varString_set)
+
+    def _var_set(self, *args):
+        if not self._safeSet:
+            self.SNSvarString.set(self.SNSvar.get())
+
+    def _varString_set(self, *args):
+        v=self.SNSvarString.get()
+        _max=int(self.cget('to'))
+        _min=int(self.cget('from'))
+        if utils.isint(v) and _min <= int(v) <= _max:
+            self.config(background=self.defaultbg)
+            self._safeSet=True
+            self.SNSvar.set(v)
+            self._safeSet=False
+            # execute the command
+            if self.SNScommand:
+                self.SNScommand()
+        else:
+            self.config(background="#C80000")
+
 
     def big_increase(self, increment):
         _curr=int(self.get())
