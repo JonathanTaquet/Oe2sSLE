@@ -1,5 +1,10 @@
 # -*- mode: python -*-
 
+from importlib.machinery import SourceFileLoader
+
+version = SourceFileLoader("module.name", os.path.abspath(".")+os.sep+"version.py").load_module()
+Oe2sSLE_VERSION = version.Oe2sSLE_VERSION
+
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
     try:
@@ -37,7 +42,7 @@ exe = EXE(pyz,
           a.binaries,
           a.zipfiles,
           a.datas,
-          name='Oe2sSLE-0.0.11-win-x86',
+          name='Oe2sSLE-'+str(Oe2sSLE_VERSION[0])+'.'+str(Oe2sSLE_VERSION[1])+'.'+str(Oe2sSLE_VERSION[2])+'-win-x86',
           debug=False,
           strip=False,
           upx=True,
