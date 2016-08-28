@@ -1642,10 +1642,11 @@ class SampleAllEditor(tk.Tk):
         i for i in range(190,461)]
 
     def __init__(self, *args, **kw):
-        self.root = tk.Tk.__init__(self, *args, **kw)
+        tk.Tk.__init__(self, *args, **kw)
         GUI.res.init()
 
-        root = self.root
+        self.root = self
+        root = self
 
         # Set the window title
         self.wm_title("Open e2sSample.all Library Editor")
