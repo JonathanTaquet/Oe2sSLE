@@ -35,7 +35,6 @@ class Player:
 
     def pause(self):
         if self.stream:
-            self.stream.stop_stream()
             self.stream.close()
             self.stream = None
         return self
