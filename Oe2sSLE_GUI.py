@@ -1731,6 +1731,10 @@ class SampleAllEditor(tk.Tk):
         self.buttonAbout.pack(side=tk.TOP)        
         fr.pack(side=tk.TOP,fill=tk.X)
 
+        self.update()
+        width, height = (self.winfo_width(), self.winfo_height())
+        self.minsize(width, height)
+
     def donate(self):
         webbrowser.open('https://pledgie.com/campaigns/30817')
     
@@ -1915,6 +1919,9 @@ class SampleAllEditor(tk.Tk):
                     esli.OSC_0index = esli.OSC_0index1 = nextsampleIndex
                     
                     self.sampleList.add_new(sample)
+                    self.update()
+                    width, height = (self.winfo_width(), self.winfo_height())
+                    self.minsize(width, height)
                 else:
                     tk.messagebox.showwarning(
                     "Import WAV",
