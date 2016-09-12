@@ -247,8 +247,10 @@ class ChunkList:
                 #warnings.warn("got a {} chunk of size={}, maxSize={}".format(chunk.header.id,chunk.header.size,maxSize))
             except Chunk.HeaderSizeError:
                 warnings.warn("'RIFF' chunk does not finish after a chunk")
+                maxSize = 0;
             except Chunk.DataSizeError:
                 warnings.warn("'RIFF' chunk contains an ignored truncaded chunk")
+                maxSize = 0;
         if not self.valid():
             raise ChunkList.InvalidError()
     
