@@ -91,14 +91,17 @@ class Chunk:
 
         self.header = ChunkHeader(file)
         
-        if maxSize is not None and maxSize < self.header.size + (self.header.size&1):
+        if maxSize is not None and maxSize < self.header.size:
             file.read(maxSize)
             raise Chunk.DataSizeError()
 
         data_class = self.registeredChunks.get(self.header.id,ChunkData)
         self.data = data_class(file,self.header)
+
+        if maxSize is not None:
+            maxSize -= self.header.size;
         # align to word size
-        if len(self.data)&1:
+        if len(self.data)&1 and (maxSize is None or maxSize):
             file.read(1)
 
     def update_header(self):
@@ -234,7 +237,7 @@ class ChunkList:
         return True
 
     def read(self, file, maxSize=None):
-        while maxSize:
+        while maxSize > 0:
             try:
                 chunk = Chunk(file,
                               maxSize=maxSize,
