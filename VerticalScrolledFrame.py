@@ -41,6 +41,7 @@ class VerticalScrolledFrame(tk.Frame):
 
         def _configure_canvas(event):
             # update the inner frame's width to fill the canvas
-            canvas.itemconfigure(interior_id, width=canvas.winfo_reqwidth)
+            if canvas.winfo_reqwidth() != interior.winfo_reqwidth():
+                canvas.itemconfigure(interior_id, width=canvas.winfo_reqwidth())
         canvas.bind('<Configure>', _configure_canvas)
         self.canvas=canvas
