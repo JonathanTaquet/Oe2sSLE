@@ -76,7 +76,7 @@ def wav_pcm_24b_to_16b(e2s_sample):
 resample a too high frequency samples for playback preview
 """
 import array
-def wav_resample_preview(rawdata, fmt, max_smpl_per_sec):
+def wav_resample_preview(rawdata, fmt, min_smpl_per_sec, max_smpl_per_sec):
     n_taps = 3
     freq = fmt.samplesPerSec
     data = array.array('h',rawdata)
@@ -90,6 +90,7 @@ def wav_resample_preview(rawdata, fmt, max_smpl_per_sec):
         # wav file is little endian
         data.byteswap()
     n_chan = fmt.channels
+    # downsample
     while int(freq) > max_smpl_per_sec:
         n_smpl = len(data)//n_chan
         wav = [list(data[chan::n_chan]) for chan in range(n_chan)]
@@ -101,6 +102,17 @@ def wav_resample_preview(rawdata, fmt, max_smpl_per_sec):
             w[:] = ([(w[0]+w[1])//2] if n_smpl > 1 else []) + [(a+(b+c)//2)//2 for a, b, c in zip(w[2::2], w[1::2], w[3::2])]
         data = array.array('h', [smp for msmp in zip(*wav) for smp in msmp])
         freq /= 2
+    # upsample
+    while int(freq) < min_smpl_per_sec:
+        n_smpl = len(data)//n_chan
+        wav = [list(data[chan::n_chan]) for chan in range(n_chan)]
+        for w in wav:
+            tmp = [0]*(2*n_smpl-1)
+            tmp[0::2] = w
+            tmp[1::2] = [((a+b)//2) for a, b in zip(w[0::], w[1::])]
+            w[:] = tmp
+        data = array.array('h', [smp for msmp in zip(*wav) for smp in msmp])
+        freq *= 2
 
     res_fmt = copy.deepcopy(fmt)
     res_fmt.samplesPerSec = int(freq)
