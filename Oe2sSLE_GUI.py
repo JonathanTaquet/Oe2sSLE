@@ -1771,6 +1771,9 @@ class SampleAllEditor(tk.Tk):
                 self.sampleList.clear()
                 for sample in samplesAll.samples:
                     self.sampleList.add_new(sample)
+                    self.update()
+                    width, height = (self.winfo_width(), self.winfo_height())
+                    self.minsize(width, height)
             wd = WaitDialog(self.root)
             wd.run(fct)
                 
@@ -1968,6 +1971,9 @@ class SampleAllEditor(tk.Tk):
                         esli.OSC_0index = esli.OSC_0index1 = nextsampleIndex
                         
                         self.sampleList.add_new(sample)
+                        self.update()
+                        width, height = (self.winfo_width(), self.winfo_height())
+                        self.minsize(width, height)
                     else:
                         tk.messagebox.showwarning(
                         "Import e2sSample.all",
