@@ -1289,7 +1289,7 @@ class Sample(object):
         esli = self.e2s_sample.get_esli()
         fmt = self.e2s_sample.get_fmt()
         data = self.e2s_sample.get_data()
-        self.name.set(esli.OSC_name.decode("utf-8").rstrip('\x00'))
+        self.name.set(esli.OSC_name.decode('ascii', 'ignore').split('\x00')[0])
         self.oscNum.set(esli.OSC_0index+1)
         self.oscCat.set(Sample.OSC_caths[esli.OSC_category])
         self.oneShot.set(esli.OSC_OneShot)
@@ -1310,10 +1310,10 @@ class Sample(object):
         self.tuneVal_trace = self.tuneVal.trace('w', self._tuneVal_set)        
     
     def _name_set(self, *args):
-        # TODO verify which encoding is used by electribe sampler
+        # electribe sampler uses a subset of the ascii encoding
         esli = self.e2s_sample.get_esli()
-        esli.OSC_name = bytes(self.name.get().encode('utf-8'))
-        self.name.set(esli.OSC_name.decode("utf-8").rstrip('\x00'))
+        esli.OSC_name = bytes(self.name.get(),'ascii', 'ignore')
+        self.name.set(esli.OSC_name.decode('ascii').rstrip('\x00'))
     
     def _oscNum_set(self, *args):
         oscNum = self.oscNum.get()
@@ -1858,7 +1858,7 @@ class SampleAllEditor(tk.Tk):
                     esli = e2s.RIFF_korg_esli()
                     esli_chunk = RIFF.Chunk(header=RIFF.ChunkHeader(id=b'esli'),data=esli)
                     korg_chunk.data.chunkList.chunks.append(esli_chunk)
-                    esli.OSC_name = bytes(os.path.splitext(os.path.basename(filename))[0],"utf8")
+                    esli.OSC_name = bytes(os.path.splitext(os.path.basename(filename))[0],'ascii','ignore')
                     #todo funtion for that:
                     data = sample.get_data()
                     esli.samplingFreq = fmt.samplesPerSec
