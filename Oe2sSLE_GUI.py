@@ -1200,7 +1200,6 @@ class Sample(object):
         self.plus12dB = tk.BooleanVar()
         self.tuneVal = tk.IntVar()
         self.samplingFreq= tk.IntVar()
-        self.duration=tk.StringVar()
         self.stereo=tk.BooleanVar()
         self.smpSize=tk.IntVar()
         
@@ -1210,6 +1209,8 @@ class Sample(object):
         self.oneShot_trace = None
         self.plus12dB_trace = None
         self.tuneVal_trace = None
+
+        self.durationEntry = tk.Label(self.master, width=8, state=tk.DISABLED, relief=tk.SUNKEN, anchor=tk.E)
 
         self.reset_vars()
         
@@ -1225,7 +1226,6 @@ class Sample(object):
         self.entryTune = ROSpinbox(self.master, from_=-63, to=63, width=3, format='%2.0f', textvariable=self.tuneVal)
         self.buttonPlay = tk.Button(self.master, image=GUI.res.playIcon, command=self.play)
         self.samplingFreqEntry = SampleNumSpinbox(self.master, width=8, textvariable=self.samplingFreq, justify=tk.RIGHT, command=self._samplingFreq_command)
-        self.durationEntry = tk.Entry(self.master, width=8, textvariable=self.duration, state=tk.DISABLED, justify=tk.RIGHT)
         self.checkStereo = tk.Checkbutton(self.master, variable=self.stereo, command=self._stereo_command)
         self.sizeEntry = tk.Entry(self.master, width=8, textvariable=self.smpSize, state=tk.DISABLED, justify=tk.RIGHT)
 
@@ -1298,7 +1298,7 @@ class Sample(object):
         self.samplingFreq.set(esli.samplingFreq)
         if fmt.samplesPerSec != esli.samplingFreq:
             print("Warning: sampling frequency differs between esli and fmt")
-        self.duration.set("{:.4f}".format(len(data)/fmt.avgBytesPerSec if fmt.avgBytesPerSec else 0))
+        self.durationEntry.config(text="{:.4f}".format(len(data)/fmt.avgBytesPerSec if fmt.avgBytesPerSec else 0))
         self.stereo.set(fmt.channels > 1)
         self.smpSize.set(len(data))
 
@@ -1388,7 +1388,7 @@ class Sample(object):
         esli.playLogPeriod = 65535 if sFreq == 0 else max(0, int(round(63132-math.log2(sFreq)*3072)))
         fmt.samplesPerSec = sFreq
         fmt.avgBytesPerSec = sFreq*fmt.blockAlign
-        self.duration.set("{:.4f}".format(len(data)/fmt.avgBytesPerSec if fmt.avgBytesPerSec else 0))
+        self.durationEntry.config(text="{:.4f}".format(len(data)/fmt.avgBytesPerSec if fmt.avgBytesPerSec else 0))
 
     def _stereo_command(self,*args):
         # don't switch immediately
