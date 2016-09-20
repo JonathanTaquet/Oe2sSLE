@@ -1773,7 +1773,7 @@ class SampleAllEditor(tk.Tk):
                     self.sampleList.add_new(sample)
                     if len(self.sampleList.samples) == 1:
                         self.update()
-                        width, height = (self.winfo_width(), self.winfo_height())
+                        width, height = (self.winfo_reqwidth(), self.winfo_reqheight())
                         self.minsize(width, height)
             wd = WaitDialog(self.root)
             wd.run(fct)
@@ -1925,7 +1925,7 @@ class SampleAllEditor(tk.Tk):
                     self.sampleList.add_new(sample)
                     if len(self.sampleList.samples) == 1:
                         self.update()
-                        width, height = (self.winfo_width(), self.winfo_height())
+                        width, height = (self.winfo_reqwidth(), self.winfo_reqheight())
                         self.minsize(width, height)
                 else:
                     tk.messagebox.showwarning(
@@ -1975,7 +1975,7 @@ class SampleAllEditor(tk.Tk):
                         self.sampleList.add_new(sample)
                         if len(self.sampleList.samples) == 1:
                             self.update()
-                            width, height = (self.winfo_width(), self.winfo_height())
+                            width, height = (self.winfo_reqwidth(), self.winfo_reqheight())
                             self.minsize(width, height)
                     else:
                         tk.messagebox.showwarning(
