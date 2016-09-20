@@ -1731,7 +1731,7 @@ class SampleAllEditor(tk.Tk):
         self.buttonAbout.pack(side=tk.TOP)        
         fr.pack(side=tk.TOP,fill=tk.X)
 
-        self.update()
+        self.update_idletasks()
         width, height = (self.winfo_width(), self.winfo_height())
         self.minsize(width, height)
 
@@ -1772,7 +1772,7 @@ class SampleAllEditor(tk.Tk):
                 for sample in samplesAll.samples:
                     self.sampleList.add_new(sample)
                     if len(self.sampleList.samples) == 1:
-                        self.update()
+                        self.update_idletasks()
                         width, height = (self.winfo_reqwidth(), self.winfo_reqheight())
                         self.minsize(width, height)
             wd = WaitDialog(self.root)
@@ -1924,7 +1924,7 @@ class SampleAllEditor(tk.Tk):
                     
                     self.sampleList.add_new(sample)
                     if len(self.sampleList.samples) == 1:
-                        self.update()
+                        self.update_idletasks()
                         width, height = (self.winfo_reqwidth(), self.winfo_reqheight())
                         self.minsize(width, height)
                 else:
@@ -1974,7 +1974,7 @@ class SampleAllEditor(tk.Tk):
                         
                         self.sampleList.add_new(sample)
                         if len(self.sampleList.samples) == 1:
-                            self.update()
+                            self.update_idletasks()
                             width, height = (self.winfo_reqwidth(), self.winfo_reqheight())
                             self.minsize(width, height)
                     else:
