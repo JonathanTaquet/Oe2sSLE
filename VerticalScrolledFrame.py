@@ -29,14 +29,19 @@ class VerticalScrolledFrame(tk.Frame):
         interior_id = canvas.create_window(0, 0, window=interior,
                                            anchor=tk.NW)
 
+        self.prev_size = (interior.winfo_reqwidth(), max(interior.winfo_reqheight(), canvas.winfo_reqheight()))
+
         # track changes to the canvas and frame width and sync them,
         # also updating the scrollbar
         def _configure_interior(event):
             # update the scrollbars to match the size of the inner frame
             size = (interior.winfo_reqwidth(), max(interior.winfo_reqheight(), canvas.winfo_height()))
-            canvas.config(scrollregion="0 0 %s %s" % size)
+            if self.prev_size != size:
+                canvas.config(scrollregion="0 0 %s %s" % size)
+                self.prev_size = size
             # update the canvas's width to fit the inner frame
-            canvas.config(width=interior.winfo_reqwidth())
+            if canvas.winfo_reqwidth() != interior.winfo_reqwidth():
+                canvas.config(width=interior.winfo_reqwidth())
         interior.bind('<Configure>', _configure_interior)
 
         def _configure_canvas(event):
