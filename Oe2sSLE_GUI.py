@@ -2049,9 +2049,9 @@ class SampleAllEditor(tk.Tk):
                 self.sliceEditDialog.sliceEditor.frame.canvas.yview_scroll(-1*(event.delta//120), "units")
             self.bind_all('<MouseWheel>', _on_mousewheel)
         elif self.system == 'Darwin':
-            #def _on_mousewheel(event):
-            #    self.sliceEditDialog.sliceEditor.frame.canvas.yview_scroll(-1*(event.delta), "units")
-            #self.bind_all('<MouseWheel>', _on_mousewheel)
+            def _on_mousewheel(event):
+                self.sliceEditDialog.sliceEditor.frame.canvas.yview_scroll(-1*(event.delta), "units")
+            self.bind_all('<MouseWheel>', _on_mousewheel)
             pass
         else:
             def _on_up(event):
@@ -2068,9 +2068,9 @@ class SampleAllEditor(tk.Tk):
                 self.frame.canvas.yview_scroll(-1*(event.delta//120), "units")
             self.bind_all('<MouseWheel>', _on_mousewheel)
         elif self.system == 'Darwin':
-            #def _on_mousewheel(event):
-            #    self.frame.canvas.yview_scroll(-1*(event.delta), "units")
-            #self.bind_all('<MouseWheel>', _on_mousewheel)
+            def _on_mousewheel(event):
+                self.frame.canvas.yview_scroll(-1*(event.delta), "units")
+            self.bind_all('<MouseWheel>', _on_mousewheel)
             pass
         else:
             def _on_up(event):
