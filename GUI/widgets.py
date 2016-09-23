@@ -29,3 +29,21 @@ class ROCombobox(tk.ttk.Combobox):
 
         if self._command:
             self.bind("<<ComboboxSelected>>", self._command)
+
+class ROSpinbox(tk.Spinbox):
+    def __init__(self, parent, *arg, **kwarg):
+        super().__init__(parent, *arg, **kwarg)
+        self.config(state='readonly')
+
+        self.bind("<FocusIn>",self._focusin)
+        self.bind("<FocusOut>",self._focusout)
+        self.bind("<Button-1>",lambda event: self.focus_set())
+
+        self.defaultrobg = self.cget('readonlybackground')
+        self._focusout()
+
+    def _focusin(self, event=None):
+        self.config(readonlybackground="#C8C8C8")
+
+    def _focusout(self, event=None):
+        self.config(readonlybackground=self.defaultrobg)

@@ -41,6 +41,7 @@ import struct
 import webbrowser
 
 from GUI.widgets import ROCombobox
+from GUI.widgets import ROSpinbox
 import GUI.res
 from GUI.stereo_to_mono import StereoToMonoDialog
 from GUI.wait_dialog import WaitDialog
@@ -72,24 +73,6 @@ class logger:
             self.file = open('Oe2sSLE.log', 'a')
         self.file.write(data)
         self.file.flush()
-
-class ROSpinbox(tk.Spinbox):
-    def __init__(self, parent, *arg, **kwarg):
-        super().__init__(parent, *arg, **kwarg)
-        self.config(state='readonly')
-        
-        self.bind("<FocusIn>",self._focusin)
-        self.bind("<FocusOut>",self._focusout)
-        self.bind("<Button-1>",lambda event: self.focus_set())
-        
-        self.defaultrobg = self.cget('readonlybackground')
-        self._focusout()
-        
-    def _focusin(self, event=None):
-        self.config(readonlybackground="#C8C8C8")
-        
-    def _focusout(self, event=None):
-        self.config(readonlybackground=self.defaultrobg)
 
 def linspace(start,stop,num):
     for i in range(num):
