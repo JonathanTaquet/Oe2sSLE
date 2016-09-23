@@ -18,3 +18,14 @@ You should have received a copy of the GNU General Public License
 along with Oe2sSLE.  If not, see <http://www.gnu.org/licenses/>
 """
 
+import tkinter as tk
+import tkinter.ttk
+
+class ROCombobox(tk.ttk.Combobox):
+    def __init__(self, parent, *arg, **kwarg):
+        self._command=kwarg.pop('command',None)
+        super().__init__(parent, *arg, **kwarg)
+        self.config(state='readonly')
+
+        if self._command:
+            self.bind("<<ComboboxSelected>>", self._command)
