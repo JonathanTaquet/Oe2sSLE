@@ -40,6 +40,7 @@ import audio
 import struct
 import webbrowser
 
+from GUI.widgets import ROCombobox
 import GUI.res
 from GUI.stereo_to_mono import StereoToMonoDialog
 from GUI.wait_dialog import WaitDialog
@@ -1195,7 +1196,6 @@ class Sample(object):
         
         self.name = tk.StringVar()
         self.oscNum = tk.IntVar()
-        self.oscCat = tk.StringVar()
         self.oneShot = tk.BooleanVar()
         self.plus12dB = tk.BooleanVar()
         self.tuneVal = tk.IntVar()
@@ -1205,12 +1205,12 @@ class Sample(object):
         
         self.name_trace = None
         self.oscNum_trace = None
-        self.oscCat_trace = None
         self.oneShot_trace = None
         self.plus12dB_trace = None
         self.tuneVal_trace = None
 
         self.durationEntry = tk.Label(self.master, width=8, state=tk.DISABLED, relief=tk.SUNKEN, anchor=tk.E)
+        self.entryOscCat = ROCombobox(self.master, values=Sample.OSC_caths, width=8, command=self._oscCat_set)
 
         self.reset_vars()
         
@@ -1218,9 +1218,6 @@ class Sample(object):
         self.entryOscNum = SampleNumSpinbox(self.master, width=3, textvariable=self.oscNum, command=self._oscNum_command)
         self.entryOscNum._prev = self.oscNum.get()
         self.entryName = tk.Entry(self.master, width=16, textvariable=self.name)
-        self.entryOscCat  = ROSpinbox(self.master, values=Sample.OSC_caths, width=8)
-        # bug? 'textvariable' must be configured later than 'values' to be used
-        self.entryOscCat.config(textvariable=self.oscCat)
         self.checkOneShot = tk.Checkbutton(self.master, variable=self.oneShot)
         self.check12dB = tk.Checkbutton(self.master, variable=self.plus12dB)
         self.entryTune = ROSpinbox(self.master, from_=-63, to=63, width=3, format='%2.0f', textvariable=self.tuneVal)
@@ -1277,8 +1274,6 @@ class Sample(object):
             self.name.trace_vdelete('w', self.name_trace)
         if self.oscNum_trace:
             self.oscNum.trace_vdelete('w', self.oscNum_trace)
-        if self.oscCat_trace:
-            self.oscCat.trace_vdelete('w', self.oscCat_trace)        
         if self.oneShot_trace:
             self.oneShot.trace_vdelete('w', self.oneShot_trace)
         if self.plus12dB_trace:
@@ -1291,7 +1286,7 @@ class Sample(object):
         data = self.e2s_sample.get_data()
         self.name.set(esli.OSC_name.decode('ascii', 'ignore').split('\x00')[0])
         self.oscNum.set(esli.OSC_0index+1)
-        self.oscCat.set(Sample.OSC_caths[esli.OSC_category])
+        self.entryOscCat.set(Sample.OSC_caths[esli.OSC_category])
         self.oneShot.set(esli.OSC_OneShot)
         self.plus12dB.set(esli.playLevel12dB)
         self.tuneVal.set(esli.sampleTune)
@@ -1304,7 +1299,6 @@ class Sample(object):
 
         self.name_trace = self.name.trace('w', self._name_set)        
         self.oscNum_trace = self.oscNum.trace('w', self._oscNum_set)        
-        self.oscCat_trace = self.oscCat.trace('w', self._oscCat_set)        
         self.oneShot_trace = self.oneShot.trace('w', self._oneShot_set)        
         self.plus12dB_trace = self.plus12dB.trace('w', self._plus12dB_set)        
         self.tuneVal_trace = self.tuneVal.trace('w', self._tuneVal_set)        
@@ -1357,7 +1351,7 @@ class Sample(object):
             #    self.oscNum.set(oscNum-1)
 
     def _oscCat_set(self, *args):
-        self.e2s_sample.get_esli().OSC_category = e2s.esli_str_to_OSC_cat[self.oscCat.get()]
+        self.e2s_sample.get_esli().OSC_category = e2s.esli_str_to_OSC_cat[self.entryOscCat.get()]
     
     def _oneShot_set(self, *args):
         oneShot = self.oneShot.get()
