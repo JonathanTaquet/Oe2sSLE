@@ -1,1 +1,1 @@
-Oe2sSLE_VERSION = (0,0,11)
+Oe2sSLE_VERSION = (0,0,12)
