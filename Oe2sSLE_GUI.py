@@ -1622,8 +1622,6 @@ class SampleAllEditor(tk.Tk):
         tk.Tk.__init__(self, *args, **kw)
         GUI.res.init()
 
-        self.root = self
-        root = self
 
         # Set the window title
         self.wm_title("Open e2sSample.all Library Editor")
@@ -1634,7 +1632,7 @@ class SampleAllEditor(tk.Tk):
 
         self.sliceEditDialog = None
 
-        self.mainFrame = tk.Frame(root)
+        self.mainFrame = tk.Frame(self)
         self.mainFrame.pack(fill=tk.BOTH, expand=tk.YES, side=tk.LEFT)
         
         self.frame = VerticalScrolledFrame(self.mainFrame)
@@ -1716,14 +1714,14 @@ class SampleAllEditor(tk.Tk):
         webbrowser.open('https://pledgie.com/campaigns/30817')
     
     def about(self):
-        about = About(self.root)
+        about = About(self)
         
     def clear(self):    
-        wd = WaitDialog(self.root)
+        wd = WaitDialog(self)
         wd.run(self.sampleList.clear)
             
     def load(self):
-        filename = tk.filedialog.askopenfilename(parent=self.root,title="Select e2s Sample.all file to open",filetypes=(('.all Files','*.all'),('All Files','*.*')))
+        filename = tk.filedialog.askopenfilename(parent=self,title="Select e2s Sample.all file to open",filetypes=(('.all Files','*.all'),('All Files','*.*')))
         if filename:
             def fct():
                 try:
@@ -1752,12 +1750,12 @@ class SampleAllEditor(tk.Tk):
                         self.update_idletasks()
                         width, height = (self.winfo_reqwidth(), self.winfo_reqheight())
                         self.minsize(width, height)
-            wd = WaitDialog(self.root)
+            wd = WaitDialog(self)
             wd.run(fct)
                 
     def save_as(self):
         if not self.sampleList.WAVDataSize.get() > e2s.WAVDataMaxSize or tk.messagebox.askyesno("Memory overflow", "Are you sure to save with memory overflow?"):
-            filename = tk.filedialog.asksaveasfilename(parent=self.root,title="Save as e2s Sample.all file",defaultextension='.all',filetypes=(('.all Files','*.all'),('All Files','*.*')),initialfile='e2sSample.all')
+            filename = tk.filedialog.asksaveasfilename(parent=self,title="Save as e2s Sample.all file",defaultextension='.all',filetypes=(('.all Files','*.all'),('All Files','*.*')),initialfile='e2sSample.all')
             if filename:
                 def fct():
                     # first assign correct OSC_importNum (maybe a bug of the electribe?)
@@ -1781,12 +1779,12 @@ class SampleAllEditor(tk.Tk):
                         "Save as",
                         "Cannot save to this file:\n{}\nError message:\n{}".format(filename, e)
                         )
-                wd = WaitDialog(self.root)
+                wd = WaitDialog(self)
                 wd.run(fct)
         
     
     def import_sample(self):
-        filenames = tk.filedialog.askopenfilenames(parent=self.root,title="Select WAV file(s) to import",filetypes=(('Wav Files','*.wav'), ('All Files','*.*')))
+        filenames = tk.filedialog.askopenfilenames(parent=self,title="Select WAV file(s) to import",filetypes=(('Wav Files','*.wav'), ('All Files','*.*')))
         def fct():
             converted = [[],[]] # (8 bits, 24 bits)
             for filename in filenames:
@@ -1917,11 +1915,11 @@ class SampleAllEditor(tk.Tk):
                     ("{} file(s) converted from 24 bits to 16 bits.\n".format(len(converted[1])) if len(converted[1]) else "")
                     )
 
-        wd = WaitDialog(self.root)
+        wd = WaitDialog(self)
         wd.run(fct)
                 
     def import_all_sample(self):
-        filename = tk.filedialog.askopenfilename(parent=self.root,title="Select e2sSample.all file to import",filetypes=(('.all Files','*.all'),('All Files','*.*')))
+        filename = tk.filedialog.askopenfilename(parent=self,title="Select e2sSample.all file to import",filetypes=(('.all Files','*.all'),('All Files','*.*')))
         if filename:        
             def fct():
                 try:
@@ -1961,12 +1959,12 @@ class SampleAllEditor(tk.Tk):
                         )
                         break
 
-            wd = WaitDialog(self.root)
+            wd = WaitDialog(self)
             wd.run(fct)
 
     def export_sample(self):
         if self.sampleList.samples:
-            filename = tk.filedialog.asksaveasfilename(parent=self.root,title="Export sample as",defaultextension='.wav',filetypes=(('Wav Files','*.wav'), ('All Files','*.*'))
+            filename = tk.filedialog.asksaveasfilename(parent=self,title="Export sample as",defaultextension='.wav',filetypes=(('Wav Files','*.wav'), ('All Files','*.*'))
                                                       ,initialfile="{:0>3}_{}.wav".format(self.sampleList.get_selected().oscNum.get(),self.sampleList.get_selected().name.get()))
             if filename:
                 try:
@@ -1980,7 +1978,7 @@ class SampleAllEditor(tk.Tk):
 
     def export_all_sample(self):
         if self.sampleList.samples:
-            directory = tk.filedialog.askdirectory(parent=self.root,title="Export all samples to directory",mustexist=True)
+            directory = tk.filedialog.askdirectory(parent=self,title="Export all samples to directory",mustexist=True)
             def fct():
                 if directory:
                     # check files do not exist
@@ -1990,7 +1988,7 @@ class SampleAllEditor(tk.Tk):
                         filename = directory+"/"+filename
                         # TODO: dialog to ask if replace/replace-all or select new rename
                         if os.path.exists(filename):
-                            filename = tk.filedialog.asksaveasfilename(parent=self.root,title="File exists, export sample as [cancel to abort]",defaultextension='.wav',filetypes=(('Wav Files','*.wav'), ('All Files','*.*'))
+                            filename = tk.filedialog.asksaveasfilename(parent=self,title="File exists, export sample as [cancel to abort]",defaultextension='.wav',filetypes=(('Wav Files','*.wav'), ('All Files','*.*'))
                                                                       ,initialdir=directory,initialfile="{:0>3}_{}.wav".format(sample.oscNum.get(),sample.name.get()))
                             if not filename:
                                 break
@@ -2004,7 +2002,7 @@ class SampleAllEditor(tk.Tk):
                                 "Export sample as",
                                 "Cannot save sample as:\n{}\nError message:\n{}".format(filename, e)
                                 )
-                                filename = tk.filedialog.asksaveasfilename(parent=self.root,title="Export sample as [cancel to abort]",defaultextension='.wav',filetypes=(('Wav Files','*.wav'), ('All Files','*.*'))
+                                filename = tk.filedialog.asksaveasfilename(parent=self,title="Export sample as [cancel to abort]",defaultextension='.wav',filetypes=(('Wav Files','*.wav'), ('All Files','*.*'))
                                                                           ,initialdir=directory,initialfile="{:0>3}_{}.wav".format(sample.oscNum.get(),sample.name.get()))
                                 if not filename:
                                     break
@@ -2012,7 +2010,7 @@ class SampleAllEditor(tk.Tk):
                         if not ok:
                             break
                                 
-            wd = WaitDialog(self.root)
+            wd = WaitDialog(self)
             wd.run(fct)
 
     system = platform.system()
