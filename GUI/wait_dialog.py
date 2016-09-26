@@ -10,8 +10,6 @@ class WaitDialog(tk.Toplevel):
         self.transient(parent)
         self.title('Please wait...')
 
-        self.parent=parent
-
         body = tk.Frame(self)
         self.waitBar = tk.ttk.Progressbar(body, orient='horizontal', mode='indeterminate', length=320)
         self.waitBar.pack(expand=True, fill=tk.BOTH, side=tk.TOP)
