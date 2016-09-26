@@ -1619,7 +1619,7 @@ class SampleAllEditor(tk.Tk):
         i for i in range(190,461)]
 
     def __init__(self, *args, **kw):
-        tk.Tk.__init__(self, *args, **kw)
+        super().__init__(*args, **kw)
         GUI.res.init()
 
 
