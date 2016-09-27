@@ -1638,6 +1638,19 @@ class SampleAllEditor(tk.Tk):
         self.sampleList = SampleList(self.frame.interior)
         self.sampleList.pack(fill=tk.BOTH, expand=tk.YES)
         
+        fr = tk.Frame(self,borderwidth=2, relief='sunken')
+        tk.Label(fr,text='/ '+str(e2s.WAVDataMaxSize)).pack(side=tk.RIGHT)
+        self.sizeEntry = tk.Entry(fr, width=8, textvariable=self.sampleList.WAVDataSize, state=tk.DISABLED, justify=tk.RIGHT)
+        self.sizeEntry.pack(side=tk.RIGHT)
+        tk.Label(fr,text='Total Data Size : ').pack(side=tk.RIGHT)
+
+        self.buttonDonate = tk.Button(fr, command=self.donate, image=GUI.res.pledgieIcon)
+        self.buttonDonate.pack(side=tk.LEFT)
+
+        self.buttonAbout=tk.Button(fr, text="About", command=self.about)
+        self.buttonAbout.pack(side=tk.TOP)
+        fr.pack(side=tk.BOTTOM,fill=tk.X)
+
         fr = tk.Frame(self)
         self.moveUp100Button = tk.Button(fr, text='<<<', command=lambda: [self.sampleList.move_up_selected() for i in range(100) ])
         self.moveUp100Button.pack(side=tk.LEFT)
@@ -1659,49 +1672,34 @@ class SampleAllEditor(tk.Tk):
         fr.pack()
 
 
-        fr = tk.Frame(self)
-        self.buttonEdit = tk.Button(fr, text="Edit Selected", command=self.edit_selected)
+        self.buttonEdit = tk.Button(self, text="Edit Selected", command=self.edit_selected)
         self.buttonEdit.pack(side=tk.TOP, fill=tk.BOTH)
 
-        self.buttonRem = tk.Button(fr, text="Remove Selected", command=self.sampleList.remove_selected)
+        self.buttonRem = tk.Button(self, text="Remove Selected", command=self.sampleList.remove_selected)
         self.buttonRem.pack(side=tk.TOP, fill=tk.BOTH)        
 
-        self.buttonAdd = tk.Button(fr, text="Import wav Sample(s)", command=self.import_sample)
+        self.buttonAdd = tk.Button(self, text="Import wav Sample(s)", command=self.import_sample)
         self.buttonAdd.pack(side=tk.TOP, fill=tk.BOTH)
         
-        self.buttonAdd = tk.Button(fr, text="Import e2sSample.all", command=self.import_all_sample)
+        self.buttonAdd = tk.Button(self, text="Import e2sSample.all", command=self.import_all_sample)
         self.buttonAdd.pack(side=tk.TOP, fill=tk.BOTH)
 
-        self.buttonExp = tk.Button(fr, text="Export Selected as wav", command=self.export_sample)
+        self.buttonExp = tk.Button(self, text="Export Selected as wav", command=self.export_sample)
         self.buttonExp.pack(side=tk.TOP, fill=tk.BOTH)
         
-        self.buttonExp = tk.Button(fr, text="Export all as wav", command=self.export_all_sample)
+        self.buttonExp = tk.Button(self, text="Export all as wav", command=self.export_all_sample)
         self.buttonExp.pack(side=tk.TOP, fill=tk.BOTH)
 
-        self.buttonLoad = tk.Button(fr, text="Open", command=self.load)
+        self.buttonLoad = tk.Button(self, text="Open", command=self.load)
         self.buttonLoad.pack(side=tk.LEFT,fill=tk.Y)
 
-        self.buttonClear = tk.Button(fr, text="Clear all", command=self.clear)
+        self.buttonClear = tk.Button(self, text="Clear all", command=self.clear)
         self.buttonClear.pack(side=tk.RIGHT)
 
-        self.buttonSaveAs = tk.Button(fr, text="Save As", command=self.save_as)
+        self.buttonSaveAs = tk.Button(self, text="Save As", command=self.save_as)
         self.buttonSaveAs.pack(side=tk.TOP,fill=tk.Y)
-        fr.pack(fill=tk.X)
 
         self.restore_binding()
-
-        fr = tk.Frame(self,borderwidth=2, relief='sunken')
-        tk.Label(fr,text='/ '+str(e2s.WAVDataMaxSize)).pack(side=tk.RIGHT)
-        self.sizeEntry = tk.Entry(fr, width=8, textvariable=self.sampleList.WAVDataSize, state=tk.DISABLED, justify=tk.RIGHT)
-        self.sizeEntry.pack(side=tk.RIGHT)
-        tk.Label(fr,text='Total Data Size : ').pack(side=tk.RIGHT)
-
-        self.buttonDonate = tk.Button(fr, command=self.donate, image=GUI.res.pledgieIcon)
-        self.buttonDonate.pack(side=tk.LEFT)
-        
-        self.buttonAbout=tk.Button(fr, text="About", command=self.about)
-        self.buttonAbout.pack(side=tk.TOP)        
-        fr.pack(side=tk.TOP,fill=tk.X)
 
         self.update_idletasks()
         width, height = (self.winfo_width(), self.winfo_height())
