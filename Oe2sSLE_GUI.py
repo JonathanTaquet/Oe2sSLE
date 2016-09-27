@@ -1632,16 +1632,13 @@ class SampleAllEditor(tk.Tk):
 
         self.sliceEditDialog = None
 
-        self.mainFrame = tk.Frame(self)
-        self.mainFrame.pack(fill=tk.BOTH, expand=tk.YES, side=tk.LEFT)
-        
-        self.frame = VerticalScrolledFrame(self.mainFrame)
+        self.frame = VerticalScrolledFrame(self)
         self.frame.pack(fill=tk.BOTH, expand=tk.YES)
         
         self.sampleList = SampleList(self.frame.interior)
         self.sampleList.pack(fill=tk.BOTH, expand=tk.YES)
         
-        fr = tk.Frame(self.mainFrame)
+        fr = tk.Frame(self)
         self.moveUp100Button = tk.Button(fr, text='<<<', command=lambda: [self.sampleList.move_up_selected() for i in range(100) ])
         self.moveUp100Button.pack(side=tk.LEFT)
 
@@ -1662,7 +1659,7 @@ class SampleAllEditor(tk.Tk):
         fr.pack()
 
 
-        fr = tk.Frame(self.mainFrame)
+        fr = tk.Frame(self)
         self.buttonEdit = tk.Button(fr, text="Edit Selected", command=self.edit_selected)
         self.buttonEdit.pack(side=tk.TOP, fill=tk.BOTH)
 
@@ -1693,7 +1690,7 @@ class SampleAllEditor(tk.Tk):
 
         self.restore_binding()
 
-        fr = tk.Frame(self.mainFrame,borderwidth=2, relief='sunken')
+        fr = tk.Frame(self,borderwidth=2, relief='sunken')
         tk.Label(fr,text='/ '+str(e2s.WAVDataMaxSize)).pack(side=tk.RIGHT)
         self.sizeEntry = tk.Entry(fr, width=8, textvariable=self.sampleList.WAVDataSize, state=tk.DISABLED, justify=tk.RIGHT)
         self.sizeEntry.pack(side=tk.RIGHT)
