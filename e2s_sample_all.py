@@ -361,8 +361,12 @@ class e2s_sample:
         self.RIFF.write(file)
         
     def get_esli(self):
-        return self.RIFF.chunkList.get_chunk(b'korg').data.chunkList.get_chunk(b'esli').data
-        
+        try:
+            return self._esli
+        except:
+            self._esli = self.RIFF.chunkList.get_chunk(b'korg').data.chunkList.get_chunk(b'esli').data
+        return self._esli
+
     def get_data(self):
         return self.RIFF.chunkList.get_chunk(b'data').data
     
