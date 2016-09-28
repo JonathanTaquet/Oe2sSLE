@@ -50,26 +50,28 @@ class RIFF_cue(RIFF.ChunkData):
             
     
         def __getattr__(self, name):
-            if name in self.fields:
+            try:
                 loc, fmt = self.fields[name]
+            except:
+                raise AttributeError
+            else:
                 size = struct.calcsize(fmt)
                 unpacked = struct.unpack(fmt, self.cue.rawdata[loc:loc+size])
                 if len(unpacked) == 1:
                     return unpacked[0]
                 else:
                     return unpacked
-            else:
-                raise AttributeError
-    
+
         def __setattr__(self, name, value):
-            if name != 'fields' and name in self.fields:
+            try:
                 loc, fmt = self.fields[name]
+            except:
+                self.__dict__[name] = value
+            else:
                 size = struct.calcsize(fmt)
                 self.__dict__['cue'].rawdata[loc:loc+size] = struct.pack(fmt, value)
-            else:
-                self.__dict__[name] = value
-        
-    
+
+
     def __init__(self, file=None, chunkHeader=None):
         self.fields = dict()
         self.rawdata = bytearray(RIFF_cue._dataMinSize)
@@ -104,24 +106,26 @@ class RIFF_cue(RIFF.ChunkData):
 #        file.write(self.rawdata)
 
     def __getattr__(self, name):
-        if name in self.fields:
+        try:
             loc, fmt = self.fields[name]
+        except:
+            raise AttributeError
+        else:
             size = struct.calcsize(fmt)
             unpacked = struct.unpack(fmt, self.rawdata[loc:loc+size])
             if len(unpacked) == 1:
                 return unpacked[0]
             else:
                 return unpacked
-        else:
-            raise AttributeError
 
     def __setattr__(self, name, value):
-        if name != 'fields' and name in self.fields:
+        try:
             loc, fmt = self.fields[name]
+        except:
+            self.__dict__[name] = value
+        else:
             size = struct.calcsize(fmt)
             self.__dict__['rawdata'][loc:loc+size] = struct.pack(fmt, value)
-        else:
-            self.__dict__[name] = value
 
 
     #TODO: easily add CuePoint(s)
