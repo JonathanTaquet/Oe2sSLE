@@ -142,14 +142,6 @@ class StereoToMonoDialog(tk.Toplevel):
 
     def apply(self):
         self.update_data()
-        korg_chunk = self.e2s_sample.RIFF.chunkList.get_chunk(b'korg')
-        esli_chunk = korg_chunk.data.chunkList.get_chunk(b'esli')
-        esli_chunk.data.rawdata[:] = self.esli.rawdata[:]
-        fmt__chunk = self.e2s_sample.RIFF.chunkList.get_chunk(b'fmt ')
-        fmt__chunk.data = self.fmt
-        data_chunk = self.e2s_sample.RIFF.chunkList.get_chunk(b'data')
-        data_chunk.data.rawdata = self.data
-        # Not requiered:
-        #data_chunk.update_header()
-        #self.e2s_sample.RIFF.update_header()
-        #self.e2s_sample.update_header()
+        esli_chunk = self.e2s_sample.get_esli().rawdata = self.esli.rawdata
+        fmt__chunk = self.e2s_sample.get_fmt().__dict__ = self.fmt.__dict__
+        data_chunk = self.e2s_sample.get_data().rawdata = self.data
