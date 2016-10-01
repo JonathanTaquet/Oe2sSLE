@@ -45,6 +45,7 @@ from GUI.widgets import ROSpinbox
 import GUI.res
 from GUI.stereo_to_mono import StereoToMonoDialog
 from GUI.wait_dialog import WaitDialog
+from GUI.about_dialog import AboutDialog
 
 import utils
 
@@ -1542,61 +1543,6 @@ class SampleList(tk.Frame):
     def play(self, e2s_sample):
         riff_fmt = e2s_sample.get_fmt()
         audio.player.play_start(audio.Sound(e2s_sample.get_data().rawdata,riff_fmt))
-        
-class About(tk.Toplevel):
-    def __init__(self, parent, *args, **kwargs):
-        super().__init__(parent, *args, **kwargs)
-        self.transient(parent)
-        self.title('About Open e2sSample.all Library Editor')
-        self.resizable(width=tk.FALSE, height=tk.FALSE)
-
-        self.parent=parent
-
-        body = tk.Frame(self)
-        self.text = tk.Text(body,state=tk.NORMAL,width=80)
-        self.text.pack()
-        body.pack(padx=5, pady=5)
-        
-        text = self.text
-        text.config(cursor="arrow")
-        text.insert(tk.INSERT,"Oe2sSLE "+str(Oe2sSLE_VERSION[0])+"."+str(Oe2sSLE_VERSION[1])+"."+str(Oe2sSLE_VERSION[2])+"\n")
-        text.insert(tk.END,
-"""
-Home Page : """)
-        text.tag_config("link-home", foreground="blue", underline=1)
-        text.tag_bind("link-home", "<Button-1>", lambda event: webbrowser.open('http://mayflyshare.com/Oe2sSLE'))
-        text.insert(tk.END, "<http://mayflyshare.com/Oe2sSLE>", "link-home")
-        text.insert(tk.END,
-"""
-
-Copyright (C) 2015-2016 Jonathan Taquet
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see """)
-        text.tag_config("link-gpl", foreground="blue", underline=1)
-        text.tag_bind("link-gpl", "<Button-1>", lambda event: webbrowser.open('http://www.gnu.org/licenses/'))
-        text.insert(tk.END, "<http://www.gnu.org/licenses/>", "link-gpl")
-
-        text.insert(tk.END, """
-
-To contribute or support, visit """)
-        text.tag_config("link-github", foreground="blue", underline=1)
-        text.tag_bind("link-github", "<Button-1>", lambda event: webbrowser.open('https://github.com/JonathanTaquet/Oe2sSLE/'))
-        text.insert(tk.END, "<https://github.com/JonathanTaquet/Oe2sSLE/>", "link-github")
-        
-        text.config(state=tk.DISABLED)        
-        
-        self.focus_set()
 
 class SampleAllEditor(tk.Tk):
     """
@@ -1709,8 +1655,8 @@ class SampleAllEditor(tk.Tk):
         webbrowser.open('https://pledgie.com/campaigns/30817')
     
     def about(self):
-        about = About(self)
-        
+        about = AboutDialog(self)
+
     def clear(self):    
         wd = WaitDialog(self)
         wd.run(self.sampleList.clear)
