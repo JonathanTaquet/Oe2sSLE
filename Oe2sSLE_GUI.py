@@ -1127,6 +1127,7 @@ class SliceEditor(tk.Frame):
         self.slicedRadioV.set(self.numActiveSteps.get()>0)
 
 class SliceEditorDialog(tk.Toplevel):
+    system = platform.system()
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
         self.withdraw()
@@ -1135,7 +1136,23 @@ class SliceEditorDialog(tk.Toplevel):
         
         self.sliceEditor = SliceEditor(self)
         self.sliceEditor.pack(fill=tk.BOTH, expand=tk.YES)
-        
+
+        if self.system == 'Windows':
+            def _on_mousewheel(event):
+                self.sliceEditor.frame.canvas.yview_scroll(-1*(event.delta//120), "units")
+            self.bind('<MouseWheel>', _on_mousewheel)
+        elif self.system == 'Darwin':
+            def _on_mousewheel(event):
+                self.sliceEditor.frame.canvas.yview_scroll(-1*(event.delta), "units")
+            self.bind('<MouseWheel>', _on_mousewheel)
+        else:
+            def _on_up(event):
+                self.sliceEditor.frame.canvas.yview_scroll(-1*(event.delta//120), "units")
+            def _on_down(event):
+                self.sliceEditor.frame.canvas.yview_scroll(event.delta//120, "units")
+            self.bind('<Button-4>', _on_up)
+            self.bind('<Button-5>', _on_down, add="+")
+
     def run(self):
         self.deiconify()
         
@@ -1150,8 +1167,6 @@ class SliceEditorDialog(tk.Toplevel):
         parent=self.master
         parent.grab_set()
         parent.focus_set()
-        parent.restore_binding()
-        
 
 class Sample(object):
     OSC_caths = ('Analog',
@@ -1960,41 +1975,25 @@ class SampleAllEditor(tk.Tk):
             self.sliceEditDialog = SliceEditorDialog(self)
         smpl = self.sampleList.get_selected()
         self.sliceEditDialog.sliceEditor.set_sample(smpl)
-        if self.system == 'Windows':
-            def _on_mousewheel(event):
-                self.sliceEditDialog.sliceEditor.frame.canvas.yview_scroll(-1*(event.delta//120), "units")
-            self.bind_all('<MouseWheel>', _on_mousewheel)
-        elif self.system == 'Darwin':
-            def _on_mousewheel(event):
-                self.sliceEditDialog.sliceEditor.frame.canvas.yview_scroll(-1*(event.delta), "units")
-            self.bind_all('<MouseWheel>', _on_mousewheel)
-            pass
-        else:
-            def _on_up(event):
-                self.sliceEditDialog.sliceEditor.frame.canvas.yview_scroll(-1*(event.delta//120), "units")
-            def _on_down(event):
-                self.sliceEditDialog.sliceEditor.frame.canvas.yview_scroll(event.delta//120, "units")
-            self.bind_all('<Button-4>', _on_up)
-            self.bind_all('<Button-5>', _on_down, add="+")
         self.sliceEditDialog.run()
 
     def restore_binding(self):
         if self.system == 'Windows':
             def _on_mousewheel(event):
                 self.frame.canvas.yview_scroll(-1*(event.delta//120), "units")
-            self.bind_all('<MouseWheel>', _on_mousewheel)
+                return "break"
+            self.bind('<MouseWheel>', _on_mousewheel)
         elif self.system == 'Darwin':
             def _on_mousewheel(event):
                 self.frame.canvas.yview_scroll(-1*(event.delta), "units")
-            self.bind_all('<MouseWheel>', _on_mousewheel)
-            pass
+            self.bind('<MouseWheel>', _on_mousewheel)
         else:
             def _on_up(event):
                 self.frame.canvas.yview_scroll(-1*(event.delta//120), "units")
             def _on_down(event):
                 self.frame.canvas.yview_scroll(event.delta//120, "units")
-            self.bind_all('<Button-4>', _on_up)
-            self.bind_all('<Button-5>', _on_down, add="+")
+            self.bind('<Button-4>', _on_up)
+            self.bind('<Button-5>', _on_down, add="+")
 
 
 if __name__ == '__main__':
