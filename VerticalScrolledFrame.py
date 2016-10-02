@@ -1,4 +1,5 @@
 import tkinter as tk
+import tkinter.ttk
 
 # adapted from http://tkinter.unpythonic.net/wiki/VerticalScrolledFrame
 class VerticalScrolledFrame(tk.Frame):
@@ -13,7 +14,7 @@ class VerticalScrolledFrame(tk.Frame):
         self.config(borderwidth=2, relief='sunken')
 
         # create a canvas object and a vertical scrollbar for scrolling it
-        vscrollbar = tk.Scrollbar(self, orient=tk.VERTICAL)
+        vscrollbar = tk.ttk.Scrollbar(self, orient=tk.VERTICAL)
         vscrollbar.pack(fill=tk.Y, side=tk.RIGHT, expand=tk.FALSE)
         canvas = tk.Canvas(self, bd=0, highlightthickness=0,
                         yscrollcommand=vscrollbar.set)
