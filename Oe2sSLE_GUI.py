@@ -1983,6 +1983,11 @@ class SampleAllEditor(tk.Tk):
                 self.frame.canvas.yview_scroll(-1*(event.delta//120), "units")
                 return "break"
             self.bind('<MouseWheel>', _on_mousewheel)
+            # TODO: add an option to select behaviour
+            ## do not scroll the interface if mouse is on a ttk Combobox
+            #self.bind_class('TCombobox', '<MouseWheel>', lambda e: "break", "+")
+            # do not change ttk Combobox content on mouse wheel event
+            self.bind_class('TCombobox', '<MouseWheel>', lambda e: None)
         elif self.system == 'Darwin':
             def _on_mousewheel(event):
                 self.frame.canvas.yview_scroll(-1*(event.delta), "units")
