@@ -1984,14 +1984,15 @@ class SampleAllEditor(tk.Tk):
                 return "break"
             self.bind('<MouseWheel>', _on_mousewheel)
             # TODO: add an option to select behaviour
-            ## do not scroll the interface if mouse is on a ttk Combobox
-            #self.bind_class('TCombobox', '<MouseWheel>', lambda e: "break", "+")
-            # do not change ttk Combobox content on mouse wheel event
-            self.bind_class('TCombobox', '<MouseWheel>', lambda e: None)
+            # do not scroll the interface if mouse is on a ttk Combobox
+            self.bind_class('TCombobox', '<MouseWheel>', lambda e: "break", "+")
+            ## do not change ttk Combobox content on mouse wheel event
+            #self.bind_class('TCombobox', '<MouseWheel>', lambda e: None)
         elif self.system == 'Darwin':
             def _on_mousewheel(event):
                 self.frame.canvas.yview_scroll(-1*(event.delta), "units")
             self.bind('<MouseWheel>', _on_mousewheel)
+            self.bind_class('TCombobox', '<MouseWheel>', lambda e: "break", "+")
         else:
             def _on_up(event):
                 self.frame.canvas.yview_scroll(-1, "units")
@@ -1999,6 +2000,8 @@ class SampleAllEditor(tk.Tk):
                 self.frame.canvas.yview_scroll(1, "units")
             self.bind('<Button-4>', _on_up)
             self.bind('<Button-5>', _on_down)
+            self.bind_class('TCombobox', '<Button-4>', lambda e: "break", "+")
+            self.bind_class('TCombobox', '<Button-5>', lambda e: "break", "+")
 
 
 if __name__ == '__main__':
