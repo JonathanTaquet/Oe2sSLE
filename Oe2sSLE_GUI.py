@@ -1147,11 +1147,11 @@ class SliceEditorDialog(tk.Toplevel):
             self.bind('<MouseWheel>', _on_mousewheel)
         else:
             def _on_up(event):
-                self.sliceEditor.frame.canvas.yview_scroll(-1*(event.delta//120), "units")
+                self.sliceEditor.frame.canvas.yview_scroll(-1, "units")
             def _on_down(event):
-                self.sliceEditor.frame.canvas.yview_scroll(event.delta//120, "units")
+                self.sliceEditor.frame.canvas.yview_scroll(1, "units")
             self.bind('<Button-4>', _on_up)
-            self.bind('<Button-5>', _on_down, add="+")
+            self.bind('<Button-5>', _on_down)
 
     def run(self):
         self.deiconify()
@@ -1994,11 +1994,11 @@ class SampleAllEditor(tk.Tk):
             self.bind('<MouseWheel>', _on_mousewheel)
         else:
             def _on_up(event):
-                self.frame.canvas.yview_scroll(-1*(event.delta//120), "units")
+                self.frame.canvas.yview_scroll(-1, "units")
             def _on_down(event):
-                self.frame.canvas.yview_scroll(event.delta//120, "units")
+                self.frame.canvas.yview_scroll(1, "units")
             self.bind('<Button-4>', _on_up)
-            self.bind('<Button-5>', _on_down, add="+")
+            self.bind('<Button-5>', _on_down)
 
 
 if __name__ == '__main__':
