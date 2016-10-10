@@ -300,6 +300,12 @@ class RIFF_korg_esli(RIFF.ChunkData):
     def write(self, file):
         file.write(self.rawdata)
 
+    def set_OSCNum(self, num):
+        self.OSC_0index = self.OSC_0index1 = num-1
+
+    def get_OSCNum(self):
+        return self.OSC_0index+1
+
 class RIFF_korg(RIFF.ChunkData):
     registeredChunks = {
         b'esli' : RIFF_korg_esli
