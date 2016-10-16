@@ -485,6 +485,25 @@ class SampleNumSpinbox(ROSpinbox):
             self.SNSvar_trace = self.SNSvar.trace('w', self._var_set)
             self.SNSvarString_trace = self.SNSvarString.trace('w', self._varString_set)
 
+    def config(self, *arg, **kwarg):
+        command=kwarg.get('command')
+        if command:
+            self.SNScommand = command
+        var=kwarg.get('textvariable')
+        if var:
+            if self.SNSvar:
+                self.SNSvar.trace_vdelete('w', self.SNSvar_trace)
+                self.SNSvarString.trace_vdelete('w', self.SNSvarString_trace)
+            self.SNSvar=var
+            self.SNSvarString=tk.StringVar()
+            self.SNSvarString.set(self.SNSvar.get())
+            kwarg['textvariable'] = self.SNSvarString
+        super().config(*arg, **kwarg)
+        if var:
+            self._safeSet=False
+            self.SNSvar_trace = self.SNSvar.trace('w', self._var_set)
+            self.SNSvarString_trace = self.SNSvarString.trace('w', self._varString_set)
+
     def _var_set(self, *args):
         if not self._safeSet:
             self.SNSvarString.set(self.SNSvar.get())
@@ -781,21 +800,23 @@ class NormalSampleOptions(tk.LabelFrame):
     def play_stop(self):
         audio.player.play_stop()
 
-    def set_sample(self, smpl):
-        self.smpl = smpl
+    def set_sample(self, smpl_list, smpl_num):
+        self.smpl_list = smpl_list
+        self.smpl = smpl = smpl_list.e2s_samples[smpl_num]
+        self.smpl_num = smpl_num
 
-        fmt = smpl.e2s_sample.get_fmt()
-        data = smpl.e2s_sample.get_data()
-        esli = smpl.e2s_sample.get_esli()        
+        fmt = smpl.get_fmt()
+        data = smpl.get_data()
+        esli = smpl.get_esli()
 
         self.fmt = fmt
         self.data = data.rawdata
         self.esli = esli
         self.blockAlign = fmt.blockAlign
         self.sample_length = len(data) // self.blockAlign
-        
-        self.oneshot = self.smpl.oneShot.get()
-        
+
+        self.oneshot = esli.OSC_OneShot
+
         if self.start_trace:
             self.start.trace_vdelete('w', self.start_trace)
         if self.stop_trace:
@@ -881,9 +902,10 @@ class NormalSampleOptions(tk.LabelFrame):
         if self.rootSet is None and self.oneshot:
             # can't be oneShot and have loopStart != stop
             if loopStart != stop:
-                self.smpl.oneShot.set(False)
+                self.esli.OSC_OneShot = False
             else:
-                self.smpl.oneShot.set(True)
+                self.esli.OSC_OneShot = True
+            self.smpl_list.update_sample(self.smpl_num)
         self.editor.wavDisplay.set_activeLineSet(self.lineSet)
         self.editor.wavDisplay.refresh(True)
 
@@ -906,9 +928,10 @@ class NormalSampleOptions(tk.LabelFrame):
         if self.rootSet is None and self.oneshot:
             # can't be oneShot and have loopStart != stop
             if loopStart != stop:
-                self.smpl.oneShot.set(False)
+                self.esli.OSC_OneShot = False
             else:
-                self.smpl.oneShot.set(True)
+                self.esli.OSC_OneShot = True
+            self.smpl_list.update_sample(self.smpl_num)
         self.editor.wavDisplay.set_activeLineSet(self.lineSet)
         self.editor.wavDisplay.refresh(True)
     
@@ -1048,12 +1071,12 @@ class SliceEditor(tk.Frame):
             else:
                 raise Exception("Unknown scroll unit: " + what)
 
-    def set_sample(self, smpl):
-        self.smpl = smpl
+    def set_sample(self, smpl_list, smpl_num):
+        self.smpl = smpl = smpl_list.e2s_samples[smpl_num]
 
-        fmt = smpl.e2s_sample.get_fmt()
-        data = smpl.e2s_sample.get_data()
-        esli = smpl.e2s_sample.get_esli()        
+        fmt = smpl.get_fmt()
+        data = smpl.get_data()
+        esli = smpl.get_esli()
 
         self.esli = esli
         self.zoomVar.set('all')
@@ -1069,7 +1092,7 @@ class SliceEditor(tk.Frame):
         self.zoomEdit.config(values=tuple(zooms))
         #self.zoomEdit.config(values=('all', 0.0625, 0.125, 0.25, 0.5, 1. ,2. ,4., 8., 16.))
         self.wavDisplay.set_wav(fmt, data)
-        self.normalSampleOptions.set_sample(smpl)
+        self.normalSampleOptions.set_sample(smpl_list, smpl_num)
         self.slicedSampleOptions.set_sample(fmt, data, esli)
         
         if self.numActiveStepsTrace:
@@ -1197,11 +1220,10 @@ class Sample(object):
                  'PCM',
                  'User')
     
-    def __init__(self, master, lineNum, e2s_sample):
+    def __init__(self, master, line_num, sample_num):
         self.master = master
-       
-        self.e2s_sample = e2s_sample
-        
+        self.frame = master.frame
+
         self.name = tk.StringVar()
         self.oscNum = tk.IntVar()
         self.oneShot = tk.BooleanVar()
@@ -1210,31 +1232,60 @@ class Sample(object):
         self.samplingFreq= tk.IntVar()
         self.stereo=tk.BooleanVar()
         self.smpSize=tk.IntVar()
-        
+
         self.name_trace = None
         self.oscNum_trace = None
         self.oneShot_trace = None
         self.plus12dB_trace = None
         self.tuneVal_trace = None
 
-        self.durationEntry = tk.Label(self.master, width=8, state=tk.DISABLED, relief=tk.SUNKEN, anchor=tk.E)
-        self.entryOscCat = ROCombobox(self.master, values=Sample.OSC_caths, width=8, command=self._oscCat_set)
+        self.radioButton = tk.Radiobutton(self.frame, variable=self.master.selectV)
+        self.durationEntry = tk.Label(self.frame, width=8, state=tk.DISABLED, relief=tk.SUNKEN, anchor=tk.E)
+        self.entryOscCat = ROCombobox(self.frame, values=Sample.OSC_caths, width=8, command=self._oscCat_set)
+        self.entryOscNum = SampleNumSpinbox(self.frame,width=3, textvariable=self.oscNum,command=self._oscNum_command)
+        # RIFF_korg_esli.playLogPeriod has a 0.5814686990855805 to 1536036.6940220615 frequency range
+        self.samplingFreqEntry = SampleNumSpinbox(self.frame, width=8, textvariable=self.samplingFreq, justify=tk.RIGHT, from_=1, to=1536036, command=self._samplingFreq_command)
+        self.entryName = tk.Entry(self.frame, width=16, textvariable=self.name)
+        self.checkOneShot = tk.Checkbutton(self.frame, variable=self.oneShot)
+        self.check12dB = tk.Checkbutton(self.frame, variable=self.plus12dB)
+        self.entryTune = ROSpinbox(self.frame, from_=-63, to=63, width=3, format='%2.0f', textvariable=self.tuneVal)
+        self.buttonPlay = tk.Button(self.frame, image=GUI.res.playIcon, command=self.play)
+        self.checkStereo = tk.Checkbutton(self.frame, variable=self.stereo, command=self._stereo_command)
+        self.sizeEntry = tk.Entry(self.frame, width=8, textvariable=self.smpSize, state=tk.DISABLED, justify=tk.RIGHT)
 
-        self.reset_vars()
-        
-        self.radioButton = tk.Radiobutton(self.master, variable=self.master.selectV)
-        self.entryOscNum = SampleNumSpinbox(self.master, width=3, textvariable=self.oscNum, command=self._oscNum_command)
-        self.entryOscNum._prev = self.oscNum.get()
-        self.entryName = tk.Entry(self.master, width=16, textvariable=self.name)
-        self.checkOneShot = tk.Checkbutton(self.master, variable=self.oneShot)
-        self.check12dB = tk.Checkbutton(self.master, variable=self.plus12dB)
-        self.entryTune = ROSpinbox(self.master, from_=-63, to=63, width=3, format='%2.0f', textvariable=self.tuneVal)
-        self.buttonPlay = tk.Button(self.master, image=GUI.res.playIcon, command=self.play)
-        self.samplingFreqEntry = SampleNumSpinbox(self.master, width=8, textvariable=self.samplingFreq, justify=tk.RIGHT, command=self._samplingFreq_command)
-        self.checkStereo = tk.Checkbutton(self.master, variable=self.stereo, command=self._stereo_command)
-        self.sizeEntry = tk.Entry(self.master, width=8, textvariable=self.smpSize, state=tk.DISABLED, justify=tk.RIGHT)
+        self.restore(line_num, sample_num)
 
-        self.set_lineNum(lineNum)
+    def restore(self, line_num, sample_num):
+        self.set_sample_num(sample_num)
+        self.grid(line_num+1)
+
+    def grid(self, row):
+        self.radioButton.grid(row=row, column=0)
+        self.entryOscNum.grid(row=row, column=1)
+        self.entryName.grid(row=row, column=2)
+        self.entryOscCat.grid(row=row, column=3)
+        self.checkOneShot.grid(row=row,column=4)
+        self.check12dB.grid(row=row,column=5)
+        self.entryTune.grid(row=row,column=6)
+        self.buttonPlay.grid(row=row, column=7)
+        self.samplingFreqEntry.grid(row=row, column=8)
+        self.durationEntry.grid(row=row, column=9)
+        self.checkStereo.grid(row=row, column=10)
+        self.sizeEntry.grid(row=row, column=11)
+
+    def forget(self):
+        self.radioButton.grid_forget()
+        self.entryOscNum.grid_forget()
+        self.entryName.grid_forget()
+        self.entryOscCat.grid_forget()
+        self.checkOneShot.grid_forget()
+        self.check12dB.grid_forget()
+        self.entryTune.grid_forget()
+        self.buttonPlay.grid_forget()
+        self.samplingFreqEntry.grid_forget()
+        self.durationEntry.grid_forget()
+        self.checkStereo.grid_forget()
+        self.sizeEntry.grid_forget()
 
     def destroy(self):
         self.radioButton.destroy()
@@ -1250,33 +1301,11 @@ class Sample(object):
         self.checkStereo.destroy()
         self.sizeEntry.destroy()
 
-    def set_lineNum(self, lineNum):
-        self.lineNum = lineNum
+    def set_sample_num(self, sample_num):
+        self.sample_num = sample_num
+        self.e2s_sample = self.master.e2s_samples[sample_num]
+        self.reset_vars()
 
-        row = lineNum+1
-
-        self.radioButton.config(value=lineNum)
-        self.radioButton.grid(row=row, column=0)        
-        self.entryOscNum.grid(row=row, column=1)
-        self.entryName.grid(row=row, column=2)
-        self.entryOscCat.grid(row=row, column=3)
-        self.checkOneShot.grid(row=row,column=4)
-        self.check12dB.grid(row=row,column=5)
-        self.entryTune.grid(row=row,column=6)
-        self.buttonPlay.grid(row=row, column=7)
-        self.samplingFreqEntry.grid(row=row, column=8)
-        self.durationEntry.grid(row=row, column=9)
-        self.checkStereo.grid(row=row, column=10)
-        self.sizeEntry.grid(row=row, column=11)
-        
-        
-        self.entryOscNum.config(from_=lineNum+19 if lineNum+19<422 else lineNum+19+79, to=999)
-        # RIFF_korg_esli.playLogPeriod has a 0.5814686990855805 to 1536036.6940220615 frequency range
-        self.samplingFreqEntry.config(from_=1, to=1536036)
-
-    def move_to_lineNum(self, lineNum):
-        self.set_lineNum(lineNum)
-        
     def reset_vars(self):
         if self.name_trace:
             self.name.trace_vdelete('w', self.name_trace)
@@ -1288,12 +1317,17 @@ class Sample(object):
             self.plus12dB.trace_vdelete('w', self.plus12dB_trace)
         if self.tuneVal_trace:
             self.tuneVal.trace_vdelete('w', self.tuneVal_trace)
-        
+
         esli = self.e2s_sample.get_esli()
         fmt = self.e2s_sample.get_fmt()
         data = self.e2s_sample.get_data()
+
+        self.entryOscNum.config(from_=self.sample_num+19 if self.sample_num+19<422 else self.sample_num+19+79, to=999)
+
+        self.radioButton.config(value=self.sample_num)
         self.name.set(esli.OSC_name.decode('ascii', 'ignore').split('\x00')[0])
         self.oscNum.set(esli.OSC_0index+1)
+        self.entryOscNum._prev = self.oscNum.get()
         self.entryOscCat.set(Sample.OSC_caths[esli.OSC_category])
         self.oneShot.set(esli.OSC_OneShot)
         self.plus12dB.set(esli.playLevel12dB)
@@ -1305,11 +1339,11 @@ class Sample(object):
         self.stereo.set(fmt.channels > 1)
         self.smpSize.set(len(data))
 
-        self.name_trace = self.name.trace('w', self._name_set)        
-        self.oscNum_trace = self.oscNum.trace('w', self._oscNum_set)        
-        self.oneShot_trace = self.oneShot.trace('w', self._oneShot_set)        
-        self.plus12dB_trace = self.plus12dB.trace('w', self._plus12dB_set)        
-        self.tuneVal_trace = self.tuneVal.trace('w', self._tuneVal_set)        
+        self.name_trace = self.name.trace('w', self._name_set)
+        self.oscNum_trace = self.oscNum.trace('w', self._oscNum_set)
+        self.oneShot_trace = self.oneShot.trace('w', self._oneShot_set)
+        self.plus12dB_trace = self.plus12dB.trace('w', self._plus12dB_set)
+        self.tuneVal_trace = self.tuneVal.trace('w', self._tuneVal_set)
     
     def _name_set(self, *args):
         # electribe sampler uses a subset of the ascii encoding
@@ -1331,10 +1365,10 @@ class Sample(object):
     
     def _oscNum_command(self):
         oscNum = self.oscNum.get()
-        lN = self.lineNum
-        samples = self.master.samples
+        lN = self.sample_num
+        e2s_samples = self.master.e2s_samples
 
-        maxval = 1000-len(samples)+lN
+        maxval = 1000-len(e2s_samples)+lN
         if maxval <= 500:
             maxval -= 79
         
@@ -1342,19 +1376,23 @@ class Sample(object):
             self.oscNum.set(maxval)
             oscNum = self.oscNum.get()
         
-        if lN and samples[lN-1].oscNum.get() >= oscNum:
+        if lN and e2s_samples[lN-1].get_esli().get_OSCNum() >= oscNum:
             # was decreased
             # check that we will not go under 19 is not necessary while 
-            # is setself.entryOscNum.config(from_=lineNum+19, to=999)
-            while lN and samples[lN-1].oscNum.get() >= samples[lN].oscNum.get():
-                samples[lN-1].oscNum.set(samples[lN].oscNum.get()-1 if samples[lN].oscNum.get() != 501 else 421)
+            # is setself.entryOscNum.config(from_=sample_num+19, to=999)
+            while lN and e2s_samples[lN-1].get_esli().get_OSCNum() >= e2s_samples[lN].get_esli().get_OSCNum():
+                nextOSCNum = e2s_samples[lN].get_esli().get_OSCNum()
+                e2s_samples[lN-1].get_esli().set_OSCNum(nextOSCNum-1 if nextOSCNum != 501 else 421)
                 lN -= 1
-        elif lN < len(samples)-1 and samples[lN+1].oscNum.get() <= oscNum:
+                self.master.update_sample(lN)
+        elif lN < len(e2s_samples)-1 and e2s_samples[lN+1].get_esli().get_OSCNum() <= oscNum:
             # was increased, look if possible
             #if len(samples)-1 - lN <= 999 - oscNum:
-            while lN < len(samples)-1 and samples[lN+1].oscNum.get() <= samples[lN].oscNum.get():
-                samples[lN+1].oscNum.set(samples[lN].oscNum.get()+1 if samples[lN].oscNum.get() != 421 else 501)
+            while lN < len(e2s_samples)-1 and e2s_samples[lN+1].get_esli().get_OSCNum() <= e2s_samples[lN].get_esli().get_OSCNum():
+                prevOSCNum = e2s_samples[lN].get_esli().get_OSCNum()
+                e2s_samples[lN+1].get_esli().set_OSCNum(prevOSCNum+1 if prevOSCNum != 421 else 501)
                 lN += 1
+                self.master.update_sample(lN)
             #else:
             #    self.oscNum.set(oscNum-1)
 
@@ -1406,22 +1444,6 @@ class Sample(object):
         self.smpSize.set(len(data))
         self.master.update_WAVDataSize()
 
-    def exchange_with(self, other):
-        # swap samples
-        self.e2s_sample, other.e2s_sample = other.e2s_sample, self.e2s_sample
-        # swap osc indexes
-        self_esli = self.e2s_sample.get_esli()
-        othe_esli = other.e2s_sample.get_esli()
-        osc_index = self_esli.OSC_0index
-        self_esli.OSC_0index=self_esli.OSC_0index1=othe_esli.OSC_0index
-        othe_esli.OSC_0index=othe_esli.OSC_0index1=osc_index
-        
-        self.reset_vars()
-        other.reset_vars()
-        self.entryOscNum._prev = self_esli.OSC_0index+1
-        other.entryOscNum._prev = othe_esli.OSC_0index+1
-
-
     def play(self):
         # TODO: have a single wav player for the whole application
         self.master.play(self.e2s_sample)
@@ -1429,30 +1451,77 @@ class Sample(object):
 class SampleList(tk.Frame):
     def __init__(self, *arg, **kwarg):
         super().__init__(*arg, **kwarg)
-        tk.Label(self, text="#Num").grid(row=0, column=1)
-        tk.Label(self, text="Name").grid(row=0, column=2)
-        tk.Label(self, text="Cat.").grid(row=0, column=3)
-        tk.Label(self, text="1-shot").grid(row=0, column=4)
-        tk.Label(self, text="+12dB").grid(row=0, column=5)
-        tk.Label(self, text="Tune").grid(row=0, column=6)
-        tk.Label(self, text="Freq (Hz)").grid(row=0, column=8)
-        tk.Label(self, text="Time (s)").grid(row=0, column=9)
-        tk.Label(self, text="Stereo").grid(row=0,column=10)
-        tk.Label(self, text="Data Size").grid(row=0, column=11)
-        
+        self.vscrollbar = tk.ttk.Scrollbar(self, orient=tk.VERTICAL, command=self.on_scroll)
+        self.vscrollbar.pack(fill=tk.Y, side=tk.RIGHT)
+        self.canvas = tk.Canvas(self, bd=0, highlightthickness=0, confine=0)
+        self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.frame = tk.Frame(self.canvas)
+        self.frame_id = self.canvas.create_window(0, 0, window=self.frame, anchor=tk.NW)
+
+        tk.Label(self.frame, text="#Num").grid(row=0, column=1)
+        tk.Label(self.frame, text="Name").grid(row=0, column=2)
+        tk.Label(self.frame, text="Cat.").grid(row=0, column=3)
+        tk.Label(self.frame, text="1-shot").grid(row=0, column=4)
+        tk.Label(self.frame, text="+12dB").grid(row=0, column=5)
+        tk.Label(self.frame, text="Tune").grid(row=0, column=6)
+        tk.Label(self.frame, text="Freq (Hz)").grid(row=0, column=8)
+        tk.Label(self.frame, text="Time (s)").grid(row=0, column=9)
+        tk.Label(self.frame, text="Stereo").grid(row=0,column=10)
+        tk.Label(self.frame, text="Data Size").grid(row=0, column=11)
+
         self.selectV = tk.IntVar()
 
         self.WAVDataSize = tk.IntVar()
 
         self.samples = []
-        
-        self.canvas_name = arg[0].winfo_parent()
+        self.samples_garbage = []
+        self.e2s_samples = []
+
+        self.update_scrollbar()
+
+        # track changes to the canvas and frame width and sync them,
+        def _configure_frame(event):
+            # update the canvas's width to fit the inner frame
+            if self.canvas.winfo_reqwidth() != self.frame.winfo_reqwidth():
+                self.canvas.config(width=self.frame.winfo_reqwidth())
+        self.frame.bind('<Configure>', _configure_frame)
+        self.canvas.bind('<Configure>', self._on_configure)
+
+    def _on_configure(self, event):
+        # update the inner frame's height to fill the canvas
+        new_h = event.height
+        _, _, _, h = self.frame.grid_bbox(0,0,0,0)
+        h_max = event.height - h
+        _, _, _, h_line = self.frame.grid_bbox(0,1,0,1)
+        while h_line*(len(self.samples)+1) <= h_max and len(self.samples)+1 <= len(self.e2s_samples):
+            sample_num=self.samples[-1].sample_num+1
+            if sample_num >= len(self.e2s_samples):
+                self.scroll(-1)
+                sample_num = len(self.e2s_samples)-1
+            self.push_sample(sample_num)
+        while len(self.samples)*h_line > h_max:
+            self.pop_sample()
+
+        self.update_scrollbar()
+
+    # this is to handle an issue with tkinter:
+    # if you destroy a Sample the canvas is resized to its req_height
+    def pop_sample(self):
+        self.samples_garbage.append(self.samples.pop())
+        self.samples_garbage[-1].forget()
+    def push_sample(self, sample_num):
+        if not self.samples_garbage:
+            smpl = Sample(self,len(self.samples),sample_num)
+        else:
+            smpl = self.samples_garbage.pop()
+            smpl.restore(len(self.samples),sample_num)
+        self.samples.append(smpl)
 
     def get_next_free_sample_index(self):
         max=17
-        for sample in self.samples:
-            if sample.e2s_sample.get_esli().OSC_0index > max:
-                max = sample.e2s_sample.get_esli().OSC_0index
+        for e2s_sample in self.e2s_samples:
+            if e2s_sample.get_esli().OSC_0index > max:
+                max = e2s_sample.get_esli().OSC_0index
         if 420 == max:
             max = 499
         if max<998:
@@ -1463,104 +1532,150 @@ class SampleList(tk.Frame):
                 if 421 <= i <= 499:
                     continue
                 found = False
-                for sample in self.samples:
-                    if sample.e2s_sample.get_esli().OSC_0index == i:
+                for e2s_sample in self.e2s_samples:
+                    if e2s_sample.get_esli().OSC_0index == i:
                         found = True
                         break
                 if not found:
                     return i
             return None
-    
-    def get_canvas(self):
-        return self._nametowidget(self.canvas_name)
-
-    def get_view_bbox(self):
-        canvas = self.get_canvas() 
-        x=canvas.canvasx(0)
-        y=canvas.canvasy(0)
-        w=canvas.winfo_width()
-        h=canvas.winfo_height()
-        return (x, y, w, h)
 
     def get_selected(self):
-        if 0 <= self.selectV.get() < len(self.samples):
-            return self.samples[self.selectV.get()]
+        if 0 <= self.selectV.get() < len(self.e2s_samples):
+            self.show_selected()
+            return self.selectV.get()
         else:
             return None
 
     def update_WAVDataSize(self):
         self.WAVDataSize.set(sum( (s.smpSize.get() for s in self.samples) ))
-    
-    def add_new(self, e2s_sample):
-        self.samples.append(Sample(self,len(self.samples),e2s_sample))
-        self.WAVDataSize.set(self.WAVDataSize.get()+self.samples[-1].smpSize.get())
-        lineNum=len(self.samples)-1
-        #sort
-        while lineNum > 1:
-            cr_index = self.samples[lineNum].oscNum.get()
-            pr_index = self.samples[lineNum-1].oscNum.get()
-            if cr_index > pr_index:
-                break
-            self.move_up(lineNum)
-            if self.selectV.get() == lineNum-1:
-                self.selectV.set(lineNum)
-            lineNum -= 1
-                
-    
-    def remove(self, line_num):
-        if 0 <= line_num < len(self.samples):
-            self.WAVDataSize.set(self.WAVDataSize.get()-self.samples[line_num].smpSize.get())
-            self.samples[line_num].destroy()
-            if line_num < len(self.samples)-1:
-                for i in range(line_num, len(self.samples)-1):
-                    self.samples[i+1].move_to_lineNum(i)
+
+    def update_scrollbar(self):
+        if self.e2s_samples:
+            self.vscrollbar.set(self.samples[0].sample_num/len(self.e2s_samples), (self.samples[-1].sample_num+1)/len(self.e2s_samples))
+        else:
+            self.vscrollbar.set(0, 1)
+
+    def on_scroll(self, command, *args):
+        if command == tk.MOVETO:
+            offset = float(args[0])
+            scroll_tot = len(self.e2s_samples)
+            self.scroll_to(scroll_tot * offset)
+        elif command == tk.SCROLL:
+            step = float(args[0])
+            what = args[1]
+
+            if what == "units":
+                self.scroll(step)
+            elif what == "pages":
+                self.scroll(step*len(samples))
             else:
-                if len(self.samples) > 1:
-                    self.selectV.set(self.selectV.get()-1) 
-            del self.samples[line_num]
+                raise Exception("Unknown scroll unit: " + what)
+
+    def scroll(self, offset):
+        if len(self.samples):
+            self.scroll_to(self.samples[0].sample_num+offset)
+
+    def scroll_to(self, offset):
+        sample_num = max(0,min(int(offset),len(self.e2s_samples)-len(self.samples)))
+        for sample in self.samples:
+            sample.set_sample_num(sample_num)
+            sample_num += 1
+        self.update_scrollbar()
+
+    def add_new(self, e2s_sample):
+        n_lines = len(self.samples)
+        _, _, _, h = self.frame.grid_bbox(0,0,0,0)
+        h_max = self.canvas.winfo_height()-h
+        _, _, _, h_line = self.frame.grid_bbox(0,1,0,1)
+        self.e2s_samples.append(e2s_sample)
+        if not n_lines or h_line*(n_lines+1) <= h_max:
+            self.push_sample(len(self.e2s_samples)-1)
+        self.WAVDataSize.set(self.WAVDataSize.get()+len(self.e2s_samples[-1].get_data()))
+        self.update_scrollbar()
+
+    def remove(self, sample_num):
+        if 0 <= sample_num < len(self.e2s_samples):
+            e2s_sample = self.e2s_samples.pop(sample_num)
+            self.WAVDataSize.set(self.WAVDataSize.get()-len(e2s_sample.get_data()))
+            first = self.samples[0].sample_num
+            last = self.samples[-1].sample_num
+            if last >= sample_num >= first:
+                # move samples
+                if first > 0:
+                    # down
+                    for s in self.samples:
+                        s.set_sample_num(s.sample_num-1)
+                else:
+                    #up
+                    for i in range(sample_num-first,last-first):
+                        self.samples[i].set_sample_num(first+i)
+                    if self.samples[-1].sample_num < len(self.e2s_samples):
+                        self.samples[-1].set_sample_num(last)
+                    else:
+                        smpl = self.samples.pop()
+                        smpl.destroy()
+                #TODO: actualize scroll-bar
+            if self.selectV.get() >= len(self.e2s_samples):
+                self.selectV.set(self.selectV.get()-1)
+            self.update_scrollbar()
 
     def clear(self):
         for sample in reversed(self.samples):
             sample.destroy()
         self.samples.clear()
+        self.e2s_samples.clear()
         self.WAVDataSize.set(0)
         self.selectV.set(0)
-        canvas = self.get_canvas()
-        canvas.yview('moveto', 0.)
-        
+        self.update_scrollbar()
+
+    def update_sample(self, sample_num):
+        if self.samples[0].sample_num <= sample_num <= self.samples[-1].sample_num:
+            self.samples[sample_num-self.samples[0].sample_num].set_sample_num(sample_num)
+
+
+    def exchange(self, a, b):
+        # swap osc indexes
+        a_esli = self.e2s_samples[a].get_esli()
+        b_esli = self.e2s_samples[b].get_esli()
+        a_index = a_esli.OSC_0index
+        a_esli.OSC_0index=a_esli.OSC_0index1=b_esli.OSC_0index
+        b_esli.OSC_0index=b_esli.OSC_0index1=a_index
+        # swap samples
+        self.e2s_samples[a], self.e2s_samples[b] = self.e2s_samples[b], self.e2s_samples[a]
+        # update sample objects
+        self.update_sample(a)
+        self.update_sample(b)
+
     def move_up(self, line_num):
-        if 0 < line_num < len(self.samples):
-            self.samples[line_num].exchange_with(self.samples[line_num-1])
+        if 0 < line_num < len(self.e2s_samples):
+            self.exchange(line_num, line_num-1)
             return True
         return False
 
     def move_down(self, line_num):
-        if 0 <= line_num < len(self.samples)-1:
-            self.samples[line_num].exchange_with(self.samples[line_num+1])
+        if 0 <= line_num < len(self.e2s_samples)-1:
+            self.exchange(line_num, line_num+1)
             return True
         return False
 
     def show_selected(self):
-        vbb = self.get_view_bbox()
-        canvas = self.get_canvas()
-        y_selected = self.samples[self.selectV.get()].entryName.winfo_y()
-        h_selected = self.samples[self.selectV.get()].entryName.winfo_height()
-        if y_selected < vbb[1]:
-            canvas.yview('moveto', y_selected/self.winfo_height())
-        elif y_selected + h_selected > vbb[1] + vbb[3]:
-            canvas.yview('moveto', (y_selected+h_selected-canvas.winfo_height())/self.winfo_height())
-            
+        selected = self.selectV.get()
+        if 0 <= selected and self.samples[0].sample_num > selected:
+            self.scroll_to(selected)
+        elif len(self.e2s_samples) > selected and self.samples[-1].sample_num < selected:
+            self.scroll_to(1+selected-len(self.samples))
+
     def move_up_selected(self):
         if self.move_up(self.selectV.get()):
             self.selectV.set(self.selectV.get()-1)
             self.show_selected()
-                
-        
+
     def move_down_selected(self):
         if self.move_down(self.selectV.get()):
             self.selectV.set(self.selectV.get()+1)
             self.show_selected()
-            
+
     def remove_selected(self):
         self.remove(self.selectV.get())
 
@@ -1602,10 +1717,10 @@ class SampleAllEditor(tk.Tk):
 
         self.sliceEditDialog = None
 
-        self.frame = VerticalScrolledFrame(self)
-        self.frame.pack(fill=tk.BOTH, expand=tk.YES)
-        
-        self.sampleList = SampleList(self.frame.interior)
+        #self.frame = VerticalScrolledFrame(self)
+        #self.frame.pack(fill=tk.BOTH, expand=tk.YES)
+        #self.sampleList = SampleList(self.frame.interior)
+        self.sampleList = SampleList(self, borderwidth=2, relief='sunken')
         self.sampleList.pack(fill=tk.BOTH, expand=tk.YES)
         
         fr = tk.Frame(self,borderwidth=2, relief='sunken')
@@ -1725,17 +1840,17 @@ class SampleAllEditor(tk.Tk):
                 def fct():
                     # first assign correct OSC_importNum (maybe a bug of the electribe?)
                     # samples are ordered by esli.OSC_0index
-                    for sample in self.sampleList.samples:
-                        esli = sample.e2s_sample.get_esli()
+                    for sample in self.sampleList.e2s_samples:
+                        esli = sample.get_esli()
                         if esli.OSC_0index < 500:
                             esli.OSC_importNum = self.factory_importNums[esli.OSC_0index-18]
                         else:
                             esli.OSC_importNum = 550+esli.OSC_0index-500
                             
                     sampleAll = e2s.e2s_sample_all()
-                    for sample in self.sampleList.samples:
+                    for sample in self.sampleList.e2s_samples:
                         # make clean local copy (no external metadata)
-                        e2s_sample = sample.e2s_sample.get_clean_copy()
+                        e2s_sample = sample.get_clean_copy()
                         sampleAll.samples.append(e2s_sample)
                     try:
                         sampleAll.save(filename)
@@ -1865,7 +1980,7 @@ class SampleAllEditor(tk.Tk):
                     self.sampleList.add_new(sample)
                     if len(self.sampleList.samples) == 1:
                         self.update_idletasks()
-                        width, height = (self.winfo_reqwidth(), self.winfo_reqheight())
+                        width, height = (self.winfo_reqwidth(), self.winfo_height())
                         self.minsize(width, height)
                 else:
                     tk.messagebox.showwarning(
@@ -1929,12 +2044,16 @@ class SampleAllEditor(tk.Tk):
 
     def export_sample(self):
         if self.sampleList.samples:
+            sn=self.sampleList.get_selected()
+            e2s_sample=self.sampleList.e2s_samples[sn]
+            oscNum=e2s_sample.get_esli().OSC_0index+1
+            oscName=e2s_sample.get_esli().OSC_name.decode('ascii', 'ignore').split('\x00')[0]
             filename = tk.filedialog.asksaveasfilename(parent=self,title="Export sample as",defaultextension='.wav',filetypes=(('Wav Files','*.wav'), ('All Files','*.*'))
-                                                      ,initialfile="{:0>3}_{}.wav".format(self.sampleList.get_selected().oscNum.get(),self.sampleList.get_selected().name.get()))
+                                                      ,initialfile="{:0>3}_{}.wav".format(oscNum,oscName))
             if filename:
                 try:
                     with open(filename, 'wb') as f:
-                        self.sampleList.get_selected().e2s_sample.write(f)
+                        e2s_sample.write(f)
                 except Exception as e:
                     tk.messagebox.showwarning(
                     "Export sample as",
@@ -1947,28 +2066,30 @@ class SampleAllEditor(tk.Tk):
             def fct():
                 if directory:
                     # check files do not exist
-                    for sample in self.sampleList.samples:
-                        filename = "{:0>3}_{}.wav".format(sample.oscNum.get(),sample.name.get())
+                    for e2s_sample in self.sampleList.e2s_samples:
+                        oscNum = e2s_sample.get_esli().OSC_0index+1
+                        oscName = e2s_sample.get_esli().OSC_name.decode('ascii', 'ignore').split('\x00')[0]
+                        filename = "{:0>3}_{}.wav".format(oscNum,oscName)
                         filename = filename.replace('/','-').replace('\\','-')
                         filename = directory+"/"+filename
                         # TODO: dialog to ask if replace/replace-all or select new rename
                         if os.path.exists(filename):
                             filename = tk.filedialog.asksaveasfilename(parent=self,title="File exists, export sample as [cancel to abort]",defaultextension='.wav',filetypes=(('Wav Files','*.wav'), ('All Files','*.*'))
-                                                                      ,initialdir=directory,initialfile="{:0>3}_{}.wav".format(sample.oscNum.get(),sample.name.get()))
+                                                                      ,initialdir=directory,initialfile="{:0>3}_{}.wav".format(oscNum,oscName))
                             if not filename:
                                 break
                         ok = False
                         while not ok:
                             try:
                                 with open(filename, 'wb') as f:
-                                    sample.e2s_sample.write(f)
+                                    e2s_sample.write(f)
                             except Exception as e:
                                 tk.messagebox.showwarning(
                                 "Export sample as",
                                 "Cannot save sample as:\n{}\nError message:\n{}".format(filename, e)
                                 )
                                 filename = tk.filedialog.asksaveasfilename(parent=self,title="Export sample as [cancel to abort]",defaultextension='.wav',filetypes=(('Wav Files','*.wav'), ('All Files','*.*'))
-                                                                          ,initialdir=directory,initialfile="{:0>3}_{}.wav".format(sample.oscNum.get(),sample.name.get()))
+                                                                          ,initialdir=directory,initialfile="{:0>3}_{}.wav".format(oscNum,oscName))
                                 if not filename:
                                     break
                             ok = True
@@ -1982,14 +2103,14 @@ class SampleAllEditor(tk.Tk):
     def edit_selected(self):
         if not self.sliceEditDialog:
             self.sliceEditDialog = SliceEditorDialog(self)
-        smpl = self.sampleList.get_selected()
-        self.sliceEditDialog.sliceEditor.set_sample(smpl)
+        smpl_num = self.sampleList.get_selected()
+        self.sliceEditDialog.sliceEditor.set_sample(self.sampleList, smpl_num)
         self.sliceEditDialog.run()
 
     def restore_binding(self):
         if self.system == 'Windows':
             def _on_mousewheel(event):
-                self.frame.canvas.yview_scroll(-1*(event.delta//120), "units")
+                self.sampleList.scroll(-1*(event.delta//120))
                 return "break"
             self.bind('<MouseWheel>', _on_mousewheel)
             # TODO: add an option to select behaviour
@@ -1999,14 +2120,14 @@ class SampleAllEditor(tk.Tk):
             #self.bind_class('TCombobox', '<MouseWheel>', lambda e: None)
         elif self.system == 'Darwin':
             def _on_mousewheel(event):
-                self.frame.canvas.yview_scroll(-1*(event.delta), "units")
+                self.sampleList.scroll(-1*(event.delta))
             self.bind('<MouseWheel>', _on_mousewheel)
             self.bind_class('TCombobox', '<MouseWheel>', lambda e: "break", "+")
         else:
             def _on_up(event):
-                self.frame.canvas.yview_scroll(-1, "units")
+                self.sampleList.scroll(-1, "units")
             def _on_down(event):
-                self.frame.canvas.yview_scroll(1, "units")
+                self.sampleList.scroll(1, "units")
             self.bind('<Button-4>', _on_up)
             self.bind('<Button-5>', _on_down)
             self.bind_class('TCombobox', '<Button-4>', lambda e: "break", "+")
