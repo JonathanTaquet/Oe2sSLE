@@ -23,6 +23,8 @@ import tkinter.ttk
 
 import threading
 
+import version
+
 
 class WaitDialog(tk.Toplevel):
     def __init__(self, parent, *args, **kwargs):
@@ -42,12 +44,15 @@ class WaitDialog(tk.Toplevel):
         self.protocol("WM_DELETE_WINDOW", self.close)
 
         self.waitBar.focus_set()
-        
+
     def run(self, task, *args, **kwargs):
-        thr=threading.Thread(target=self._run_thread,args=(task,)+args,kwargs=kwargs)
-        thr.start()
-        self.wait_window(self)
-        
+        if not version.debug:
+            thr=threading.Thread(target=self._run_thread,args=(task,)+args,kwargs=kwargs)
+            thr.start()
+            self.wait_window(self)
+        else:
+            self._run_thread(task,*args, **kwargs)
+
     def _run_thread(self, task, *args, **kwargs):
         task(*args,**kwargs)
         self.destroy()
