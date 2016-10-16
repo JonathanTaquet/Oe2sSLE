@@ -19,3 +19,5 @@ along with Oe2sSLE.  If not, see <http://www.gnu.org/licenses/>
 """
 
 Oe2sSLE_VERSION = (0,0,12)
+
+debug = False
