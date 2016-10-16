@@ -49,31 +49,40 @@ from GUI.about_dialog import AboutDialog
 
 import utils
 
-from version import Oe2sSLE_VERSION
+from version import Oe2sSLE_VERSION, debug
 
-class logger:
-    def __init__(self):
-        self.file = None
-        self.stderr = sys.stderr
-        self.stdout = sys.stdout
-        sys.stderr=self
-        sys.stdout=self
+if not debug:
+    class logger:
+        def __init__(self):
+            self.file = None
+            self.stderr = sys.stderr
+            self.stdout = sys.stdout
+            sys.stderr=self
+            sys.stdout=self
 
-    def __enter__(self):
-        return self
+        def __enter__(self):
+            return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
-        if self.file:
-            self.file.write('-- Logger closed --\n')
-            self.file.close()
-        sys.stderr = self.stderr
-        sys.stdout = self.stdout
+        def __exit__(self, exc_type, exc_value, traceback):
+            if self.file:
+                self.file.write('-- Logger closed --\n')
+                self.file.close()
+            sys.stderr = self.stderr
+            sys.stdout = self.stdout
 
-    def write(self, data):
-        if not self.file:
-            self.file = open('Oe2sSLE.log', 'a')
-        self.file.write(data)
-        self.file.flush()
+        def write(self, data):
+            if not self.file:
+                self.file = open('Oe2sSLE.log', 'a')
+            self.file.write(data)
+            self.file.flush()
+else:
+    class logger:
+        def __init__(self):
+            pass
+        def __enter__(self):
+            return self
+        def __exit__(self, exc_type, exc_value, traceback):
+            pass
 
 def linspace(start,stop,num):
     for i in range(num):
