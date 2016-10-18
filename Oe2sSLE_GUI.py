@@ -1453,8 +1453,8 @@ class SampleList(tk.Frame):
         for sample in self.samples:
             if sample.e2s_sample.get_esli().OSC_0index > max:
                 max = sample.e2s_sample.get_esli().OSC_0index
-        if 421 <= max <= 499:
-            max = 500
+        if 420 == max:
+            max = 499
         if max<998:
             return max+1
         else:
