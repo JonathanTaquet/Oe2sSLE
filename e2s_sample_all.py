@@ -110,8 +110,8 @@ class RIFF_korg_esli(RIFF.ChunkData):
 
     class SliceData:
         def __init__(self, esli_master, slice_num):
-            self.fields=dict()
-            self.esli = esli_master
+            self.__dict__['fields']=dict()
+            self.__dict__['esli']=esli_master
             offset=self.esli.fields['slicesData'][0]+slice_num*struct.calcsize('4I')
             self.fields['start']=(offset, '<I')
             offset+=struct.calcsize('I')
@@ -160,8 +160,8 @@ class RIFF_korg_esli(RIFF.ChunkData):
             
     
     def __init__(self, file=None, chunkHeader=None):
-        self.fields = dict()
-        self.rawdata = bytearray(RIFF_korg_esli._dataSize)
+        self.__dict__['fields'] = dict()
+        self.__dict__['rawdata'] = bytearray(RIFF_korg_esli._dataSize)
         offset = 0
         self.fields['OSC_0index']=(offset, '<H')
         offset += struct.calcsize('H')
@@ -222,7 +222,7 @@ class RIFF_korg_esli(RIFF.ChunkData):
         self.fields['_493_UVar']=(offset, '1s')
         offset += struct.calcsize('1s')
 
-        self.slices = []
+        self.__dict__['slices'] = []
         for i in range(64):
             self.slices.append(self.SliceData(self,i))
         
