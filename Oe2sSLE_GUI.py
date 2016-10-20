@@ -1517,27 +1517,28 @@ class SampleList(tk.Frame):
             smpl.restore(len(self.samples),sample_num)
         self.samples.append(smpl)
 
+    def find_max_sample_0index(self):
+        # e2s_samples are currently ordered by OSC_0index
+        if self.e2s_samples:
+            return self.e2s_samples[-1].get_esli().OSC_0index
+        else:
+            return 17
+
     def get_next_free_sample_index(self):
-        max=17
-        for e2s_sample in self.e2s_samples:
-            if e2s_sample.get_esli().OSC_0index > max:
-                max = e2s_sample.get_esli().OSC_0index
+        max = self.find_max_sample_0index()
         if 420 == max:
             max = 499
         if max<998:
             return max+1
         else:
-            # find first free
-            for i in range(18,999):
-                if 421 <= i <= 499:
-                    continue
-                found = False
-                for e2s_sample in self.e2s_samples:
-                    if e2s_sample.get_esli().OSC_0index == i:
-                        found = True
-                        break
-                if not found:
-                    return i
+            # max is 998, find first free
+            # e2s_samples are currently ordered by OSC_0index
+            next=18
+            for e2s_sample in self.e2s_samples:
+                curr = e2s_sample.get_esli().OSC_0index
+                if curr > next:
+                    return next
+                next = curr+1 if curr != 420 else 500
             return None
 
     def get_selected(self):
