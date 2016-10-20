@@ -1612,7 +1612,7 @@ class SampleList(tk.Frame):
         while smp_num < len(self.e2s_samples):
             self.update_sample(smp_num)
             smp_num += 1
-        self.scroll_to(insert_num)
+        self.update_scrollbar()
 
     def remove(self, sample_num):
         if 0 <= sample_num < len(self.e2s_samples):
