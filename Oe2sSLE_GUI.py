@@ -1584,15 +1584,34 @@ class SampleList(tk.Frame):
         self.update_scrollbar()
 
     def add_new(self, e2s_sample):
+        self.e2s_samples.append(e2s_sample)
+        self.WAVDataSize.set(self.WAVDataSize.get()+len(self.e2s_samples[-1].get_data()))
+        smp_num=len(self.e2s_samples)-1
+        osc_num=e2s_sample.get_esli().get_OSCNum()
+        #sort
+        while smp_num > 0:
+            pr_osc_num = self.e2s_samples[smp_num-1].get_esli().get_OSCNum()
+            if osc_num > pr_osc_num:
+                break
+            # swap samples
+            self.e2s_samples[smp_num], self.e2s_samples[smp_num-1] = self.e2s_samples[smp_num-1], self.e2s_samples[smp_num]
+            smp_num -= 1
+        insert_num=smp_num
+        # add new sample line if necessary
         n_lines = len(self.samples)
         _, _, _, h = self.frame.grid_bbox(0,0,0,0)
         h_max = self.canvas.winfo_height()-h
         _, _, _, h_line = self.frame.grid_bbox(0,1,0,1)
-        self.e2s_samples.append(e2s_sample)
         if not n_lines or h_line*(n_lines+1) <= h_max:
             self.push_sample(len(self.e2s_samples)-1)
-        self.WAVDataSize.set(self.WAVDataSize.get()+len(self.e2s_samples[-1].get_data()))
-        self.update_scrollbar()
+        # update selected sample
+        if len(self.e2s_samples) > 1 and self.selectV.get() >= smp_num:
+            self.selectV.set(smp_num+1)
+        # update sample objects
+        while smp_num < len(self.e2s_samples):
+            self.update_sample(smp_num)
+            smp_num += 1
+        self.scroll_to(insert_num)
 
     def remove(self, sample_num):
         if 0 <= sample_num < len(self.e2s_samples):
@@ -1630,7 +1649,7 @@ class SampleList(tk.Frame):
         self.update_scrollbar()
 
     def update_sample(self, sample_num):
-        if self.samples[0].sample_num <= sample_num <= self.samples[-1].sample_num:
+        if self.samples and self.samples[0].sample_num <= sample_num <= self.samples[-1].sample_num:
             self.samples[sample_num-self.samples[0].sample_num].set_sample_num(sample_num)
 
 
