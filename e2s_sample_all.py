@@ -113,7 +113,7 @@ class RIFF_korg_esli(RIFF.ChunkData):
             self.__dict__['fields']=dict()
             self.__dict__['esli']=esli_master
             offset=self.esli.fields['slicesData'][0]+slice_num*struct.calcsize('4I')
-            self.fields['start']=(offset, '<I')
+            self.fields['start']=(offset, '<i')
             offset+=struct.calcsize('I')
             self.fields['length']=(offset, '<I')
             offset+=struct.calcsize('I')
