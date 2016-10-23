@@ -226,7 +226,7 @@ class RIFF_korg_esli(RIFF.ChunkData):
         for i in range(64):
             self.slices.append(self.SliceData(self,i))
         
-        self.sliceSteps = self.SliceSteps(self)
+        self.__dict__['sliceSteps'] = self.SliceSteps(self)
 
         if file:
             self.read(file,chunkHeader)
