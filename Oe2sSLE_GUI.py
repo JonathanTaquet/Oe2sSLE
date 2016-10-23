@@ -611,7 +611,7 @@ class Slice:
         self.blockAlign = fmt.blockAlign
         self.sample_length = len(data) // self.blockAlign
 
-        start=esli.slices[self.sliceNum].start
+        start=esli.slices[self.sliceNum].start + self.esli.OSC_StartPoint_address//self.blockAlign
         stop=start+esli.slices[self.sliceNum].length-1
         attack=start+esli.slices[self.sliceNum].attack_length-1
         amplitude=esli.slices[self.sliceNum].amplitude
@@ -661,7 +661,7 @@ class Slice:
         if start > self.attack.get()+1:
             self.attack.set(start-1)
 
-        self.esli.slices[self.sliceNum].start = start
+        self.esli.slices[self.sliceNum].start = start - self.esli.OSC_StartPoint_address//self.blockAlign
         # update the offsets
         self.esli.slices[self.sliceNum].length = self.stop.get()-start+1
         self.esli.slices[self.sliceNum].attack_length = self.attack.get()-start+1
@@ -875,11 +875,21 @@ class NormalSampleOptions(tk.LabelFrame):
             self.rootSet = None
 
         start = self.start.get()
+        prev_OSC_StartPoint_address = self.esli.OSC_StartPoint_address
         self.esli.OSC_StartPoint_address = start*self.blockAlign
         # update the offsets
         self.esli.OSC_LoopStartPoint_offset = (self.loopStart.get()-start)*self.blockAlign
         self.esli.OSC_EndPoint_offset = (self.stop.get()-start)*self.blockAlign
-        
+        # update slices
+        for sliceNum in range(64):
+            slice = self.esli.slices[sliceNum]
+            if slice.length:
+                slice.start += (prev_OSC_StartPoint_address - self.esli.OSC_StartPoint_address)//self.blockAlign
+            else:
+                # update interface to make slice starts at new startpoint (i.e. keep offset = 0)
+                self.editor.slicedSampleOptions.frameSlices.slices[sliceNum].start.set(start)
+                self.editor.slicedSampleOptions.frameSlices.slices[sliceNum].stop.set(start-1)
+
         self.editor.wavDisplay.set_activeLineSet(self.lineSet)
         self.editor.wavDisplay.refresh(True)
 
