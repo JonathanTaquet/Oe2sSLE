@@ -360,12 +360,17 @@ class e2s_sample:
             raise ValueError(
                 "Expected {} chunk, got {}; ignored.".format(b"RIFF", self.header.id))
         self.RIFF = RIFF.Form(file,self.header,registeredForms={b'WAVE':RIFF_korgWAVEChunkList})
-    
-    def write(self, file):
-        self.update_header()
-        self.header.write(file)
-        self.RIFF.write(file)
-        
+
+    def write(self, file, _do_clean=True):
+        sample = self
+
+        if _do_clean:
+            sample = self.get_clean_copy()
+
+        sample.update_header()
+        sample.header.write(file)
+        sample.RIFF.write(file)
+
     def get_esli(self):
         try:
             return self._esli
@@ -471,4 +476,4 @@ class e2s_sample_all:
                     if diff:
                         warnings.warn('empty filling')
                         f.write(b'\x00'*diff)
-                    riffAddr[1].write(f)
+                    riffAddr[1].write(f,_do_clean=False)
