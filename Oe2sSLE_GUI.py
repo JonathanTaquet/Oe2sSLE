@@ -1585,18 +1585,7 @@ class SampleAllEditor(tk.Tk):
     - sort imported samples
     - check box: remove unhandled chunks
     - button: edit sample
-    """    
-    
-    factory_importNums = [
-        i for i in range( 50, 86)] + [
-        i for i in range( 87,113)] + [
-        i for i in range(114,126)] + [
-        i for i in range(127,136)] + [
-        i for i in range(137,182)] + [
-        i for i in range(183,184)] + [
-        i for i in range(185,186)] + [
-        i for i in range(187,189)] + [
-        i for i in range(190,461)]
+    """
 
     def __init__(self, *args, **kw):
         super().__init__(*args, **kw)
@@ -1733,19 +1722,9 @@ class SampleAllEditor(tk.Tk):
             filename = tk.filedialog.asksaveasfilename(parent=self,title="Save as e2s Sample.all file",defaultextension='.all',filetypes=(('.all Files','*.all'),('All Files','*.*')),initialfile='e2sSample.all')
             if filename:
                 def fct():
-                    # first assign correct OSC_importNum (maybe a bug of the electribe?)
-                    # samples are ordered by esli.OSC_0index
-                    for sample in self.sampleList.samples:
-                        esli = sample.e2s_sample.get_esli()
-                        if esli.OSC_0index < 500:
-                            esli.OSC_importNum = self.factory_importNums[esli.OSC_0index-18]
-                        else:
-                            esli.OSC_importNum = 550+esli.OSC_0index-500
-                            
                     sampleAll = e2s.e2s_sample_all()
                     for sample in self.sampleList.samples:
-                        # make clean local copy (no external metadata)
-                        e2s_sample = sample.e2s_sample.get_clean_copy()
+                        e2s_sample = sample.e2s_sample
                         sampleAll.samples.append(e2s_sample)
                     try:
                         sampleAll.save(filename)

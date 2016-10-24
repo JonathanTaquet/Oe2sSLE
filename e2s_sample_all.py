@@ -399,6 +399,17 @@ class e2s_sample:
 # TODO: check if e2s supports RIFX files (big endian)
 
 class e2s_sample_all:
+    factory_importNums = [
+        i for i in range( 50, 86)] + [
+        i for i in range( 87,113)] + [
+        i for i in range(114,126)] + [
+        i for i in range(127,136)] + [
+        i for i in range(137,182)] + [
+        i for i in range(183,184)] + [
+        i for i in range(185,186)] + [
+        i for i in range(187,189)] + [
+        i for i in range(190,461)]
+
     def __init__(self, **kw):
         self.samples = []
         if 'filename' in kw:
@@ -426,12 +437,23 @@ class e2s_sample_all:
                         traceback.print_exc()
 
     def save(self, filename):
+        # first assign correct OSC_importNum (maybe a bug of the electribe?)
+        # samples are ordered by esli.OSC_0index
+        for sample in self.samples:
+            esli = sample.get_esli()
+            if esli.OSC_0index < 500:
+                esli.OSC_importNum = self.factory_importNums[esli.OSC_0index-18]
+            else:
+                esli.OSC_importNum = 550+esli.OSC_0index-500
+
         # RIFF addresses up to 0x1000 in the file
         # do like e2s:
         #
         riffAddrs=[(0,None)]*1020
         riffNextAddr=0x1000
         for sample in self.samples:
+            # make clean local copy (no external metadata)
+            sample = sample.get_clean_copy()
             addr=sample.RIFF.chunkList.get_chunk(b'korg').data.chunkList.get_chunk(b'esli').data.OSC_0index
             if riffAddrs[addr][1] is not None:
                 warnings.warn('Multiple samples with same OSC number, duplicates lost')
