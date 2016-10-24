@@ -32,8 +32,8 @@ class RIFF_cue(RIFF.ChunkData):
         _dataSize = struct.calcsize(_dataFmt)
         
         def __init__(self, cue_master, cue_point_num):
-            self.fields=dict()
-            self.cue = cue_master
+            self.__dict__['fields']=dict()
+            self.__dict__['cue'] = cue_master
             offset=cue_master._dataMinSize+cue_point_num*self._dataSize
             self.fields['identifier']=(offset, '<I')
             offset+=struct.calcsize('I')
@@ -73,14 +73,14 @@ class RIFF_cue(RIFF.ChunkData):
 
 
     def __init__(self, file=None, chunkHeader=None):
-        self.fields = dict()
-        self.rawdata = bytearray(RIFF_cue._dataMinSize)
+        self.__dict__['fields'] = dict()
+        self.__dict__['rawdata'] = bytearray(RIFF_cue._dataMinSize)
         offset = 0
         self.fields['numCuePoints']=(offset, '<I')
         offset += struct.calcsize('I')
 
-        self.cuePoints = []
-        
+        self.__dict__['cuePoints'] = []
+
         if file:
             self.read(file,chunkHeader)
         else:
@@ -100,7 +100,7 @@ class RIFF_cue(RIFF.ChunkData):
         
     def reset(self):
         self.numCuePoints = 0
-        self.cuePoints = []
+        self.__dict__['cuePoints'] = []
 
 #    def write(self, file):
 #        file.write(self.rawdata)

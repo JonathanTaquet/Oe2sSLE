@@ -43,8 +43,8 @@ class RIFF_smpl(RIFF.ChunkData):
         """
         
         def __init__(self, smpl_master, loop_num):
-            self.fields=dict()
-            self.smpl = smpl_master
+            self.__dict__['fields']=dict()
+            self.__dict__['smpl'] = smpl_master
             offset=smpl_master._dataMinSize+loop_num*self._dataSize
             self.fields['identifier']=(offset, '<I')
             offset+=struct.calcsize('I')
@@ -84,8 +84,8 @@ class RIFF_smpl(RIFF.ChunkData):
 
 
     def __init__(self, file=None, chunkHeader=None):
-        self.fields = dict()
-        self.rawdata = bytearray(RIFF_smpl._dataMinSize)
+        self.__dict__['fields'] = dict()
+        self.__dict__['rawdata'] = bytearray(RIFF_smpl._dataMinSize)
         offset = 0
         self.fields['manufacturer']=(offset, '<I')
         offset += struct.calcsize('I')
@@ -106,8 +106,8 @@ class RIFF_smpl(RIFF.ChunkData):
         self.fields['numAdditionalBytes']=(offset, '<I')
         offset += struct.calcsize('I')
 
-        self.loops = []
-        
+        self.__dict__['loops'] = []
+
         if file:
             self.read(file,chunkHeader)
         else:
