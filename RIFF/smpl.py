@@ -156,4 +156,8 @@ class RIFF_smpl(RIFF.ChunkData):
             self.__dict__['rawdata'][loc:loc+size] = struct.pack(fmt, value)
 
 
-    #TODO: easily add loop(s)
+    def add_loop(self):
+        self.rawdata[len(self.rawdata):]=bytes(self.LoopData._dataSize)
+        self.loops.append(self.LoopData(self,len(self.loops)))
+        self.numSampleLoops = len(self.loops)
+        return self.loops[-1]
