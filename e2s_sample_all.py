@@ -447,6 +447,6 @@ class e2s_sample_all:
                 if riffAddr[0]:
                     diff = riffAddr[0]-f.tell()
                     if diff:
-                        warnings.warn('empty feeling')
+                        warnings.warn('empty filling')
                         f.write(b'\x00'*diff)
                     riffAddr[1].write(f)
