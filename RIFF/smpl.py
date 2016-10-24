@@ -85,7 +85,7 @@ class RIFF_smpl(RIFF.ChunkData):
 
     def __init__(self, file=None, chunkHeader=None):
         self.__dict__['fields'] = dict()
-        self.__dict__['rawdata'] = bytearray(RIFF_smpl._dataMinSize)
+        self.__dict__['rawdata'] = bytearray()
         offset = 0
         self.fields['manufacturer']=(offset, '<I')
         offset += struct.calcsize('I')
@@ -126,15 +126,9 @@ class RIFF_smpl(RIFF.ChunkData):
             self.loops.append(self.LoopData(self,loopNum))
         
     def reset(self):
-        self.manufacturer = 0
-        self.product = 0
-        self.samplePeriod = 0
+        self.rawdata[:] = bytes(RIFF_smpl._dataMinSize)
         self.MIDIUnityNote = 60 # default to Middle C
-        self.MIDIPitchFraction = 0
-        self.SMPTEFormat = 0
-        self.numSampleLoops = 0
-        self.numAdditionalBytes = 0
-        self.loops = []
+        self.loops[:] = []
 
 #    def write(self, file):
 #        file.write(self.rawdata)
