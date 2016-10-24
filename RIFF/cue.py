@@ -127,5 +127,8 @@ class RIFF_cue(RIFF.ChunkData):
             size = struct.calcsize(fmt)
             self.__dict__['rawdata'][loc:loc+size] = struct.pack(fmt, value)
 
-
-    #TODO: easily add CuePoint(s)
+    def add_cue_point(self):
+        self.rawdata[len(self.rawdata):]=bytes(self.CuePoint._dataSize)
+        self.cuePoints.append(self.CuePoint(self,len(self.cuePoints)))
+        self.numCuePoints = len(self.cuePoints)
+        return self.cuePoints[-1]
