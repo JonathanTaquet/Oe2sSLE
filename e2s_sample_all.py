@@ -361,11 +361,29 @@ class e2s_sample:
                 "Expected {} chunk, got {}; ignored.".format(b"RIFF", self.header.id))
         self.RIFF = RIFF.Form(file,self.header,registeredForms={b'WAVE':RIFF_korgWAVEChunkList})
 
-    def write(self, file, _do_clean=True):
+    def write(self, file, export_smpl=False, _do_clean=True):
         sample = self
 
         if _do_clean:
             sample = self.get_clean_copy()
+
+        esli = sample.get_esli()
+        fmt = sample.get_fmt()
+        uid = 0
+
+        if export_smpl and esli.OSC_LoopStartPoint_offset < esli.OSC_EndPoint_offset:
+            smpl = RIFF_smpl()
+            smpl.samplePeriod = int(round(1./esli.samplingFreq*10.**9))
+            loop = smpl.add_loop()
+            loop.identifier = uid # not adding a cue point for the loop
+            #loop.type = 0 # loop forward
+            loop.start = (esli.OSC_StartPoint_address + esli.OSC_LoopStartPoint_offset)//fmt.blockAlign
+            loop.end = (esli.OSC_StartPoint_address + esli.OSC_EndPoint_offset)//fmt.blockAlign
+            #loop.fraction = 0
+            #loop.playCount = 0 # infinite loop
+            smpl_chunk = RIFF.Chunk(header=RIFF.ChunkHeader(id=b'smpl'),data=smpl)
+            sample.RIFF.chunkList.chunks.append(smpl_chunk)
+            uid += 1
 
         sample.update_header()
         sample.header.write(file)

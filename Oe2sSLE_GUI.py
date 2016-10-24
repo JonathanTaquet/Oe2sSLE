@@ -1923,7 +1923,7 @@ class SampleAllEditor(tk.Tk):
             if filename:
                 try:
                     with open(filename, 'wb') as f:
-                        self.sampleList.get_selected().e2s_sample.write(f)
+                        self.sampleList.get_selected().e2s_sample.write(f, export_smpl=True)
                 except Exception as e:
                     tk.messagebox.showwarning(
                     "Export sample as",
@@ -1950,7 +1950,7 @@ class SampleAllEditor(tk.Tk):
                         while not ok:
                             try:
                                 with open(filename, 'wb') as f:
-                                    sample.e2s_sample.write(f)
+                                    sample.e2s_sample.write(f, export_smpl=True)
                             except Exception as e:
                                 tk.messagebox.showwarning(
                                 "Export sample as",
