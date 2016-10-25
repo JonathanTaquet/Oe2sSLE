@@ -361,7 +361,7 @@ class e2s_sample:
                 "Expected {} chunk, got {}; ignored.".format(b"RIFF", self.header.id))
         self.RIFF = RIFF.Form(file,self.header,registeredForms={b'WAVE':RIFF_korgWAVEChunkList})
 
-    def write(self, file, export_smpl=False, _do_clean=True):
+    def write(self, file, export_smpl=False, export_cue=False, _do_clean=True):
         sample = self
 
         if _do_clean:
@@ -384,6 +384,38 @@ class e2s_sample:
             smpl_chunk = RIFF.Chunk(header=RIFF.ChunkHeader(id=b'smpl'),data=smpl)
             sample.RIFF.chunkList.chunks.append(smpl_chunk)
             uid += 1
+
+        if export_cue:
+            num_samples = len(sample.get_data()) // fmt.blockAlign
+            slices = []
+            for slice in esli.slices:
+                if not slice.length:
+                    continue
+                # remove duplicates
+                skip = False
+                for other in slices:
+                    if slice.start == other.start:
+                        skip = True
+                        break
+                    if slice.start >= num_samples:
+                        skip = True
+                        break
+                if skip:
+                    continue
+                slices.append(slice)
+            if slices:
+                cue = RIFF_cue()
+                for slice in slices:
+                    cue_point = cue.add_cue_point()
+                    cue_point.identifier = uid
+                    cue_point.position = slice.start
+                    cue_point.fccChunk = b'data'
+                    #cue_point.chunkStart = 0
+                    #cue_point.blockStart = 0
+                    cue_point.sampleOffset = slice.start
+                    uid += 1
+                cue_chunk = RIFF.Chunk(header=RIFF.ChunkHeader(id=b'cue '),data=cue)
+                sample.RIFF.chunkList.chunks.append(cue_chunk)
 
         sample.update_header()
         sample.header.write(file)
