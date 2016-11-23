@@ -37,12 +37,14 @@ class AboutDialog(tk.Toplevel):
         text = self.text
         text.config(cursor="arrow")
         text.insert(tk.INSERT,"Oe2sSLE "+str(Oe2sSLE_VERSION[0])+"."+str(Oe2sSLE_VERSION[1])+"."+str(Oe2sSLE_VERSION[2])+"\n")
+
         text.insert(tk.END,
 """
-Home Page : """)
-        text.tag_config("link-home", foreground="blue", underline=1)
-        text.tag_bind("link-home", "<Button-1>", lambda event: webbrowser.open('http://mayflyshare.com/Oe2sSLE'))
-        text.insert(tk.END, "<http://mayflyshare.com/Oe2sSLE>", "link-home")
+The Home of this application is its GitHub repository.
+To contribute or support, visit """)
+        text.tag_config("link-github", foreground="blue", underline=1)
+        text.tag_bind("link-github", "<Button-1>", lambda event: webbrowser.open('https://github.com/JonathanTaquet/Oe2sSLE/'))
+        text.insert(tk.END, "<https://github.com/JonathanTaquet/Oe2sSLE/>", "link-github")
         text.insert(tk.END,
 """
 
@@ -63,13 +65,6 @@ along with this program.  If not, see """)
         text.tag_config("link-gpl", foreground="blue", underline=1)
         text.tag_bind("link-gpl", "<Button-1>", lambda event: webbrowser.open('http://www.gnu.org/licenses/'))
         text.insert(tk.END, "<http://www.gnu.org/licenses/>", "link-gpl")
-
-        text.insert(tk.END, """
-
-To contribute or support, visit """)
-        text.tag_config("link-github", foreground="blue", underline=1)
-        text.tag_bind("link-github", "<Button-1>", lambda event: webbrowser.open('https://github.com/JonathanTaquet/Oe2sSLE/'))
-        text.insert(tk.END, "<https://github.com/JonathanTaquet/Oe2sSLE/>", "link-github")
 
         text.config(state=tk.DISABLED)
 
