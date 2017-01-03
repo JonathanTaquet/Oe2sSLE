@@ -443,9 +443,13 @@ class e2s_sample:
 
 
     def get_clean_copy(self):
+        from copy import deepcopy
         copy = e2s_sample()
         copy.header = RIFF.ChunkHeader(id=self.header.id)
-        copy.RIFF.chunkList.chunks.append(self.RIFF.chunkList.get_chunk(b'fmt '))
+        copy.RIFF.chunkList.chunks.append(deepcopy(self.RIFF.chunkList.get_chunk(b'fmt ')))
+        # if "fmt " chunk contains extra data they are removed
+        copy.RIFF.chunkList.chunks[-1].data.otherFieldsRAW = None
+
         copy.RIFF.chunkList.chunks.append(self.RIFF.chunkList.get_chunk(b'data'))
         copy.RIFF.chunkList.chunks.append(self.RIFF.chunkList.get_chunk(b'korg'))
         copy.header.size = len(copy.RIFF)
