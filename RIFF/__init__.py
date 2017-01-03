@@ -208,7 +208,9 @@ class WAVE_fmt_(ChunkData):
                     fmt,
                     *[getattr(self,field) for field in fields]
                     ))      
-        
+
+        if self.otherFieldsRAW:
+            file.write(self.otherFieldsRAW)
 
 
 class WAVE_data(ChunkData):
