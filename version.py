@@ -18,6 +18,6 @@ You should have received a copy of the GNU General Public License
 along with Oe2sSLE.  If not, see <http://www.gnu.org/licenses/>
 """
 
-Oe2sSLE_VERSION = (0,0,12)
+Oe2sSLE_VERSION = (0,0,13)
 
 debug = False
