@@ -10,8 +10,17 @@ Graphical user interface is using tkinter to reduce external dependencies. The o
 
 `pip install pyaudio`
 
+run the application with
 
-Startup file is Oe2sSLE_GUI.py
+`python Oe2sSLE_GUI.py`
+
+This application is still under development, so if you encounter a bug, do not hesitate to report it as a new Issue.
+
+For this, if possible try to reproduce the bug, then delete (or rename) the log file, then reproduce the bug one more time and attach (or copy/paste content of) the new created (clean) log file to the
+description of the Issue.
+
+The log file should be located in `~/.Oe2sSLE/Oe2sSLE.log` (`<your drive letter>:\\Users\\<your username>\\.Oe2sSLE\\Oe2sSLE.log` on windows).
+
 
 Some screenshots:
 ---
