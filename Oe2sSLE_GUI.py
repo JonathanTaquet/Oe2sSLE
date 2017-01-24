@@ -1898,113 +1898,118 @@ class SampleAllEditor(tk.Tk):
                 try:
                     with open(filename, 'rb') as f:
                         sample = e2s.e2s_sample(f)
-                except Exception as e:
-                    tk.messagebox.showwarning(
-                    "Import WAV",
-                    "Cannot open this file:\n{}\nError message:\n{}".format(filename, e)
-                    )
-                    continue
                 
-                #check format
-                fmt = sample.get_fmt()
-                if fmt.formatTag != fmt.WAVE_FORMAT_PCM:
-                    tk.messagebox.showwarning(
-                    "Import WAV",
-                    "Cannot use this file:\n{}\nWAV format must be WAVE_FORMAT_PCM".format(filename)
-                    )
-                    continue
-                # electribe and Oe2sSLE do not allow empty samples
-                if not len(sample.get_data()):
-                    tk.messagebox.showwarning(
-                    "Import WAV",
-                    "Cannot use this file:\n{}\nNo data: empty samples are not allowed".format(filename)
-                    )
-                    continue
-                if fmt.bitPerSample != 16:
-                    if fmt.bitPerSample == 8:
-                        wav_tools.wav_pcm_8b_to_16b(sample)
-                        converted[0] += [filename]
-                    elif fmt.bitPerSample == 24:
-                        wav_tools.wav_pcm_24b_to_16b(sample)
-                        converted[1] += [filename]
-                    else:
+                    #check format
+                    fmt = sample.get_fmt()
+                    if fmt.formatTag != fmt.WAVE_FORMAT_PCM:
                         tk.messagebox.showwarning(
                         "Import WAV",
-                        "Cannot use this file:\n{}\nWAV format must preferably use 16 bits per sample.\n" +
-                        "8 bits and old 24 bits per sample are also supported but will be converted to 16 bits.\n"
-                        "Convert your file before importing it.".format(filename)
+                        "Cannot use this file:\n{}\nWAV format must be WAVE_FORMAT_PCM".format(filename)
                         )
                         continue
-                    fmt = sample.get_fmt()
+                    # electribe and Oe2sSLE do not allow empty samples
+                    if not len(sample.get_data()):
+                        tk.messagebox.showwarning(
+                        "Import WAV",
+                        "Cannot use this file:\n{}\nNo data: empty samples are not allowed".format(filename)
+                        )
+                        continue
+                    if fmt.bitPerSample != 16:
+                        if fmt.bitPerSample == 8:
+                            wav_tools.wav_pcm_8b_to_16b(sample)
+                            converted[0] += [filename]
+                        elif fmt.bitPerSample == 24:
+                            wav_tools.wav_pcm_24b_to_16b(sample)
+                            converted[1] += [filename]
+                        else:
+                            tk.messagebox.showwarning(
+                            "Import WAV",
+                            "Cannot use this file:\n{}\nWAV format must preferably use 16 bits per sample.\n" +
+                            "8 bits and old 24 bits per sample are also supported but will be converted to 16 bits.\n"
+                            "Convert your file before importing it.".format(filename)
+                            )
+                            continue
+                        fmt = sample.get_fmt()
                 
-                if not sample.RIFF.chunkList.get_chunk(b'korg'):
-                    korg_data=e2s.RIFF_korg()
-                    korg_chunk = RIFF.Chunk(header=RIFF.ChunkHeader(id=b'korg'),data=korg_data)
-                    sample.RIFF.chunkList.chunks.append(korg_chunk)
-                    sample.header.size += len(korg_chunk)
+                    if not sample.RIFF.chunkList.get_chunk(b'korg'):
+                        korg_data=e2s.RIFF_korg()
+                        korg_chunk = RIFF.Chunk(header=RIFF.ChunkHeader(id=b'korg'),data=korg_data)
+                        sample.RIFF.chunkList.chunks.append(korg_chunk)
+                        sample.header.size += len(korg_chunk)
                 
-                korg_chunk = sample.RIFF.chunkList.get_chunk(b'korg')
+                    korg_chunk = sample.RIFF.chunkList.get_chunk(b'korg')
                 
-                esli_chunk = korg_chunk.data.chunkList.get_chunk(b'esli')
-                if not esli_chunk:
-                    esli = e2s.RIFF_korg_esli()
-                    esli_chunk = RIFF.Chunk(header=RIFF.ChunkHeader(id=b'esli'),data=esli)
-                    korg_chunk.data.chunkList.chunks.append(esli_chunk)
-                    esli.OSC_name = bytes(os.path.splitext(os.path.basename(filename))[0],'ascii','ignore')
-                    #todo funtion for that:
-                    data = sample.get_data()
-                    esli.samplingFreq = fmt.samplesPerSec
-                    esli.OSC_EndPoint_offset = esli.OSC_LoopStartPoint_offset = len(data) - fmt.blockAlign
-                    esli.WAV_dataSize = len(data)
-                    if fmt.blockAlign == 4:
-                        # stereo
-                        esli.useChan1 = True
-                    # by default use maximum volume (not like electribe that computes a good value)
-                    esli.playVolume = 65535
+                    esli_chunk = korg_chunk.data.chunkList.get_chunk(b'esli')
+                    if not esli_chunk:
+                        esli = e2s.RIFF_korg_esli()
+                        esli_chunk = RIFF.Chunk(header=RIFF.ChunkHeader(id=b'esli'),data=esli)
+                        korg_chunk.data.chunkList.chunks.append(esli_chunk)
+                        esli.OSC_name = bytes(os.path.splitext(os.path.basename(filename))[0],'ascii','ignore')
+                        #todo funtion for that:
+                        data = sample.get_data()
+                        esli.samplingFreq = fmt.samplesPerSec
+                        esli.OSC_EndPoint_offset = esli.OSC_LoopStartPoint_offset = len(data) - fmt.blockAlign
+                        esli.WAV_dataSize = len(data)
+                        if fmt.blockAlign == 4:
+                            # stereo
+                            esli.useChan1 = True
+                        # by default use maximum volume (not like electribe that computes a good value)
+                        esli.playVolume = 65535
                     
-                    esli.OSC_importNum = self.import_num
-                    self.import_num += 1
-                    # by default play speed is same as indicated by Frequency
-                    esli.playLogPeriod = 65535 if fmt.samplesPerSec == 0 else max(0, int(round(63132-math.log2(fmt.samplesPerSec)*3072)))
-                    esli_chunk.header.size += len(esli_chunk)
-                    sample.header.size += len(esli_chunk)
+                        esli.OSC_importNum = self.import_num
+                        self.import_num += 1
+                        # by default play speed is same as indicated by Frequency
+                        esli.playLogPeriod = 65535 if fmt.samplesPerSec == 0 else max(0, int(round(63132-math.log2(fmt.samplesPerSec)*3072)))
+                        esli_chunk.header.size += len(esli_chunk)
+                        sample.header.size += len(esli_chunk)
 
-                    # check if smpl chunk is used
-                    smpl_chunk = sample.RIFF.chunkList.get_chunk(b'smpl')
-                    if smpl_chunk:
-                        # use it to initialize loop point
-                        if smpl_chunk.data.numSampleLoops > 0:
-                            # todo: if several LoopData, propose to generate several wavs ?
-                            smpl_loop = smpl_chunk.data.loops[0]
-                            if smpl_loop.playCount != 1:
-                                # looping sample
-                                start = smpl_loop.start*fmt.blockAlign
-                                end = smpl_loop.end*fmt.blockAlign
-                                if start < end and end <= len(data) - fmt.blockAlign:
-                                    esli.OSC_LoopStartPoint_offset = start - esli.OSC_StartPoint_address
-                                    esli.OSC_OneShot = 0
-                                    esli.OSC_EndPoint_offset = end - esli.OSC_StartPoint_address
-                    # check if cue chunk is used
-                    cue_chunk = sample.RIFF.chunkList.get_chunk(b'cue ')
-                    if cue_chunk:
-                        num_cue_points = cue_chunk.data.numCuePoints
-                        num_slices = 0
-                        num_samples = len(data) // fmt.blockAlign
-                        for cue_point_num in range(num_cue_points):
-                            cue_point = cue_chunk.data.cuePoints[cue_point_num]
-                            if cue_point.fccChunk != b'data' or cue_point.sampleOffset >= num_samples:
-                                # unhandled cue_point
-                                continue
-                            else:
-                                esli.slices[num_slices].start = cue_point.sampleOffset
-                                esli.slices[num_slices].length = num_samples - cue_point.sampleOffset
-                                if num_slices > 0:
-                                    esli.slices[num_slices-1].length = esli.slices[num_slices].start - esli.slices[num_slices-1].start
-                                num_slices += 1
-                                if num_slices >= 64:
-                                    break
-                else:
-                    esli = esli_chunk.data
+                        # check if smpl chunk is used
+                        smpl_chunk = sample.RIFF.chunkList.get_chunk(b'smpl')
+                        if smpl_chunk:
+                            # use it to initialize loop point
+                            if smpl_chunk.data.numSampleLoops > 0:
+                                # todo: if several LoopData, propose to generate several wavs ?
+                                smpl_loop = smpl_chunk.data.loops[0]
+                                if smpl_loop.playCount != 1:
+                                    # looping sample
+                                    start = smpl_loop.start*fmt.blockAlign
+                                    end = smpl_loop.end*fmt.blockAlign
+                                    if start < end and end <= len(data) - fmt.blockAlign:
+                                        esli.OSC_LoopStartPoint_offset = start - esli.OSC_StartPoint_address
+                                        esli.OSC_OneShot = 0
+                                        esli.OSC_EndPoint_offset = end - esli.OSC_StartPoint_address
+                        # check if cue chunk is used
+                        cue_chunk = sample.RIFF.chunkList.get_chunk(b'cue ')
+                        if cue_chunk:
+                            num_cue_points = cue_chunk.data.numCuePoints
+                            num_slices = 0
+                            num_samples = len(data) // fmt.blockAlign
+                            for cue_point_num in range(num_cue_points):
+                                cue_point = cue_chunk.data.cuePoints[cue_point_num]
+                                if cue_point.fccChunk != b'data' or cue_point.sampleOffset >= num_samples:
+                                    # unhandled cue_point
+                                    continue
+                                else:
+                                    esli.slices[num_slices].start = cue_point.sampleOffset
+                                    esli.slices[num_slices].length = num_samples - cue_point.sampleOffset
+                                    if num_slices > 0:
+                                        esli.slices[num_slices-1].length = esli.slices[num_slices].start - esli.slices[num_slices-1].start
+                                    num_slices += 1
+                                    if num_slices >= 64:
+                                        break
+                    else:
+                        esli = esli_chunk.data
+                except BaseException as e:
+                    tk.messagebox.showwarning(
+                    "Import WAV",
+                    "Cannot use this file:\n{}\n"
+                    "The file is probably corrupted or you found a bug.\n"
+                    "See log file for details.\n"
+                    "Error message:\{}.".format(filename, e)
+                    )
+                    # also report it in log file
+                    print(e)
+                    continue
 
                 nextsampleIndex = self.sampleList.get_next_free_sample_index()
                 if nextsampleIndex is not None:
