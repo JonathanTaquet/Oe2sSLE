@@ -86,14 +86,14 @@ class Chunk:
         if maxSize is not None:
             if maxSize < ChunkHeader.head_len:
                 file.read(maxSize)
-                raise Chunk.HeaderSizeError()
+                raise Chunk.HeaderSizeError("not enough data to read chunk header")
             maxSize -= ChunkHeader.head_len
 
         self.header = ChunkHeader(file)
         
         if maxSize is not None and maxSize < self.header.size:
             file.read(maxSize)
-            raise Chunk.DataSizeError()
+            raise Chunk.DataSizeError("not enough data to read chunk body")
 
         data_class = self.registeredChunks.get(self.header.id,ChunkData)
         self.data = data_class(file,self.header)
@@ -257,7 +257,7 @@ class ChunkList:
                 warnings.warn("'RIFF' chunk contains an ignored truncaded chunk")
                 maxSize = 0;
         if not self.valid():
-            raise ChunkList.InvalidError()
+            raise ChunkList.InvalidError("'RIFF' form seems to be invalid")
     
     def write(self, file):
         if not self.valid():
