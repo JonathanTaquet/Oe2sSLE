@@ -1913,7 +1913,13 @@ class SampleAllEditor(tk.Tk):
                     "Cannot use this file:\n{}\nWAV format must be WAVE_FORMAT_PCM".format(filename)
                     )
                     continue
-                    
+                # electribe and Oe2sSLE do not allow empty samples
+                if not len(sample.get_data()):
+                    tk.messagebox.showwarning(
+                    "Import WAV",
+                    "Cannot use this file:\n{}\nNo data: empty samples are not allowed".format(filename)
+                    )
+                    continue
                 if fmt.bitPerSample != 16:
                     if fmt.bitPerSample == 8:
                         wav_tools.wav_pcm_8b_to_16b(sample)
