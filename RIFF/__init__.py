@@ -219,6 +219,9 @@ class WAVE_data(ChunkData):
     # TODO: handle LIST wavl ?
 
 class ChunkList:
+    class InvalidError(Exception):
+        pass
+
     def __init__(self, registeredChunks):
         self.chunks=[]
         self.registeredChunks = dict(registeredChunks)
