@@ -77,12 +77,23 @@ if not debug:
             sys.stdout = self.stdout
 
         def write(self, data):
-            if not self.file:
-                if not os.path.exists(Oe2sSLE_dir):
-                    os.makedirs(Oe2sSLE_dir)
-                self.file = open(self.log_file_path, 'a')
-            self.file.write(data)
-            self.file.flush()
+            try:
+                if not self.file:
+                    if not os.path.exists(Oe2sSLE_dir):
+                        os.makedirs(Oe2sSLE_dir)
+                    self.file = open(self.log_file_path, 'a')
+                self.file.write(data)
+                self.file.flush()
+            except BaseException as e:
+                tk.messagebox.showerror(
+                    "Critical Error",
+                    (
+                        'Failed to write in log file {}:\n'
+                        'Error: {}\n'
+                        'This occured while trying to log following message:\n'
+                        '{}'
+                    ).format(self.log_file_path, e, data)
+                )
 else:
     class logger:
         def __init__(self):
