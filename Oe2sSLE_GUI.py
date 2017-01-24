@@ -33,6 +33,7 @@ import e2s_sample_all as e2s
 from VerticalScrolledFrame import VerticalScrolledFrame
 import wav_tools
 
+import os
 import os.path
 
 import audio
@@ -51,8 +52,13 @@ import utils
 
 from version import Oe2sSLE_VERSION, debug
 
+Oe2sSLE_dir = os.path.expanduser('~') + os.sep + '.Oe2sSLE'
+
 if not debug:
     class logger:
+
+        log_file_path = Oe2sSLE_dir + os.sep + 'Oe2sSLE.log'
+
         def __init__(self):
             self.file = None
             self.stderr = sys.stderr
@@ -72,7 +78,9 @@ if not debug:
 
         def write(self, data):
             if not self.file:
-                self.file = open('Oe2sSLE.log', 'a')
+                if not os.path.exists(Oe2sSLE_dir):
+                    os.makedirs(Oe2sSLE_dir)
+                self.file = open(self.log_file_path, 'a')
             self.file.write(data)
             self.file.flush()
 else:
