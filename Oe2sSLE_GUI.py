@@ -47,6 +47,7 @@ import GUI.res
 from GUI.stereo_to_mono import StereoToMonoDialog
 from GUI.wait_dialog import WaitDialog
 from GUI.about_dialog import AboutDialog
+from GUI.import_options import ImportOptionsDialog, ImportOptions
 
 import utils
 
@@ -1730,6 +1731,7 @@ class SampleAllEditor(tk.Tk):
         super().__init__(*args, **kw)
         GUI.res.init()
 
+        self.import_opts = ImportOptions()
 
         # Set the window title
         self.wm_title("Open e2sSample.all Library Editor")
@@ -1786,11 +1788,20 @@ class SampleAllEditor(tk.Tk):
         self.buttonRem = tk.Button(self, text="Remove Selected", command=self.sampleList.remove_selected)
         self.buttonRem.pack(side=tk.TOP, fill=tk.BOTH)        
 
-        self.buttonAdd = tk.Button(self, text="Import wav Sample(s)", command=self.import_sample)
+        fr = tk.Frame(self)
+        fr2 = tk.Frame(fr)
+        self.buttonAdd = tk.Button(fr2, text="Import wav Sample(s)", command=self.import_sample)
         self.buttonAdd.pack(side=tk.TOP, fill=tk.BOTH)
-        
-        self.buttonAdd = tk.Button(self, text="Import e2sSample.all", command=self.import_all_sample)
+
+        self.buttonAdd = tk.Button(fr2, text="Import e2sSample.all", command=self.import_all_sample)
         self.buttonAdd.pack(side=tk.TOP, fill=tk.BOTH)
+        fr2.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
+
+        fr2 = tk.Frame(fr, borderwidth=2)
+        self.buttonImportOptions = tk.Button(fr2, text="Import Options", command=self.import_options)
+        self.buttonImportOptions.pack(fill=None)
+        fr2.pack(side=tk.LEFT, fill=None)
+        fr.pack(side=tk.TOP, fill=tk.BOTH)
 
         self.buttonExp = tk.Button(self, text="Export Selected as wav", command=self.export_sample)
         self.buttonExp.pack(side=tk.TOP, fill=tk.BOTH)
@@ -1822,7 +1833,11 @@ class SampleAllEditor(tk.Tk):
     def clear(self):    
         wd = WaitDialog(self)
         wd.run(self.sampleList.clear)
-            
+
+    def import_options(self):
+        dialog = ImportOptionsDialog(self, self.import_opts)
+        self.wait_window(dialog)
+
     def load(self):
         filename = tk.filedialog.askopenfilename(parent=self,title="Select e2s Sample.all file to open",filetypes=(('.all Files','*.all'),('All Files','*.*')))
         if filename:
@@ -1940,7 +1955,11 @@ class SampleAllEditor(tk.Tk):
                             esli.useChan1 = True
                         # by default use maximum volume (not like electribe that computes a good value)
                         esli.playVolume = 65535
-                    
+
+                        # use options defaults
+                        esli.OSC_category = esli.OSC_category = e2s.esli_str_to_OSC_cat[self.import_opts.osc_cat]
+                        esli.playLevel12dB = self.import_opts.plus_12_db
+
                         esli.OSC_importNum = self.import_num
                         self.import_num += 1
                         # by default play speed is same as indicated by Frequency
@@ -1950,6 +1969,7 @@ class SampleAllEditor(tk.Tk):
 
                         # check if smpl chunk is used
                         smpl_chunk = sample.RIFF.chunkList.get_chunk(b'smpl')
+                        smpl_used = False
                         if smpl_chunk:
                             # use it to initialize loop point
                             if smpl_chunk.data.numSampleLoops > 0:
@@ -1963,6 +1983,11 @@ class SampleAllEditor(tk.Tk):
                                         esli.OSC_LoopStartPoint_offset = start - esli.OSC_StartPoint_address
                                         esli.OSC_OneShot = 0
                                         esli.OSC_EndPoint_offset = end - esli.OSC_StartPoint_address
+                                        smpl_used = True
+                        if not smpl_used and self.import_opts.loop_type == 1:
+                            # loop all
+                            esli.OSC_LoopStartPoint_offset = 0
+                            esli.OSC_OneShot = 0
                         # check if cue chunk is used
                         cue_chunk = sample.RIFF.chunkList.get_chunk(b'cue ')
                         if cue_chunk:
@@ -1995,6 +2020,30 @@ class SampleAllEditor(tk.Tk):
                     # also report it in log file
                     print(e)
                     continue
+
+                #
+                # Apply forced import options
+                #
+
+                if self.import_opts.force_osc_cat:
+                    esli.OSC_category = e2s.esli_str_to_OSC_cat[self.import_opts.osc_cat]
+
+                if self.import_opts.force_loop_type:
+                    if self.import_opts.loop_type == 0:
+                        # force one shot
+                        esli.OSC_LoopStartPoint_offset = esli.OSC_EndPoint_offset
+                        esli.OSC_OneShot = 1
+                    elif self.import_opts.loop_type == 1:
+                        # force loop all
+                        esli.OSC_LoopStartPoint_offset = 0
+                        esli.OSC_OneShot = 0
+
+                if self.import_opts.force_plus_12_db:
+                    esli.playLevel12dB = self.import_opts.plus_12_db
+
+                #
+                # Register the sample
+                #
 
                 nextsampleIndex = self.sampleList.get_next_free_sample_index()
                 if nextsampleIndex is not None:
@@ -2045,7 +2094,31 @@ class SampleAllEditor(tk.Tk):
                 
                 for sample in samplesAll.samples:
                     esli = sample.get_esli()
-    
+
+                    #
+                    # Apply forced import options
+                    #
+
+                    if self.import_opts.force_osc_cat:
+                        esli.OSC_category = e2s.esli_str_to_OSC_cat[self.import_opts.osc_cat]
+
+                    if self.import_opts.force_loop_type:
+                        if self.import_opts.loop_type == 0:
+                            # force one shot
+                            esli.OSC_LoopStartPoint_offset = esli.OSC_EndPoint_offset
+                            esli.OSC_OneShot = 1
+                        elif self.import_opts.loop_type == 1:
+                            # force loop all
+                            esli.OSC_LoopStartPoint_offset = 0
+                            esli.OSC_OneShot = 0
+
+                    if self.import_opts.force_plus_12_db:
+                        esli.playLevel12dB = self.import_opts.plus_12_db
+
+                    #
+                    # Register the sample
+                    #
+
                     nextsampleIndex = self.sampleList.get_next_free_sample_index()
                     if nextsampleIndex is not None:
                         esli.OSC_0index = esli.OSC_0index1 = nextsampleIndex
