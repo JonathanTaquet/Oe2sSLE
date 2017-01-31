@@ -1230,25 +1230,10 @@ class SliceEditorDialog(tk.Toplevel):
         parent.focus_set()
 
 class Sample(object):
-    OSC_caths = ('Analog',
-                 'Audio In',
-                 'Kick',
-                 'Snare',
-                 'Clap',
-                 'HiHat',
-                 'Cymbal',
-                 'Hits',
-                 'Shots',
-                 'Voice',
-                 'SE',
-                 'FX',
-                 'Tom',
-                 'Perc.',
-                 'Phrase',
-                 'Loop',
-                 'PCM',
-                 'User')
-    
+    OSC_caths = tuple(
+        e2s.esli_OSC_cat_to_str[k]
+        for k in sorted(e2s.esli_OSC_cat_to_str))
+
     def __init__(self, master, line_num, sample_num):
         self.master = master
         self.frame = master.frame
