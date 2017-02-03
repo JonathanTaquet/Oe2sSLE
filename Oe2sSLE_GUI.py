@@ -1761,7 +1761,9 @@ class SampleAllEditor(tk.Tk):
         self.buttonDonate.pack(side=tk.LEFT)
 
         self.buttonAbout=tk.Button(fr, text="About", command=self.about)
+        tk.Frame(fr).pack(side=tk.TOP,fill=tk.Y,expand=1)
         self.buttonAbout.pack(side=tk.TOP)
+        tk.Frame(fr).pack(side=tk.TOP,fill=tk.Y,expand=1)
         fr.pack(side=tk.BOTTOM,fill=tk.X)
 
         fr = tk.Frame(self)
