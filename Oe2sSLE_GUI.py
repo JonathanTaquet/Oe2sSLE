@@ -481,6 +481,33 @@ class WaveDisplay(tk.Canvas):
                 
             self.photo.configure(data=bytes(ppm), width=w, height=h)
 
+class MaxValueEntry(tk.Entry):
+    def __init__(self, parent, max, *arg, **kwarg):
+        self.MVEmax = max
+        self.MVEvar = kwarg.get('textvariable')
+        if self.MVEvar:
+            self.MVEvar_trace = self.MVEvar.trace('w', self._var_set)
+        super().__init__(parent, *arg, **kwarg)
+        self.defaultbg =  self.cget('disabledbackground')
+
+    def config(self, *arg, **kwarg):
+        var = kwarg.get('textvariable')
+        if var:
+            if self.MVEvar:
+                self.MVEvar.trace_vdelete('w', self.MVEvar_trace)
+            self.MVEvar=MVEvar
+        super().config(*arg, **kwarg)
+        if var:
+            self.MVEvar_trace = self.MVEvar.trace('w', self._var_set)
+
+    def _var_set(self, *args):
+        val = self.MVEvar.get()
+        if val <= self.MVEmax:
+            self.config(disabledbackground=self.defaultbg)
+        else:
+            self.config(disabledbackground="#C80000")
+
+
 class SampleNumSpinbox(ROSpinbox):
     def __init__(self, parent, *arg, **kwarg):
         self.SNScommand=kwarg.get('command')
@@ -1753,7 +1780,7 @@ class SampleAllEditor(tk.Tk):
         
         fr = tk.Frame(self,borderwidth=2, relief='sunken')
         tk.Label(fr,text='/ '+str(e2s.WAVDataMaxSize)).pack(side=tk.RIGHT)
-        self.sizeEntry = tk.Entry(fr, width=8, textvariable=self.sampleList.WAVDataSize, state=tk.DISABLED, justify=tk.RIGHT)
+        self.sizeEntry = MaxValueEntry(fr, e2s.WAVDataMaxSize, width=8, textvariable=self.sampleList.WAVDataSize, state=tk.DISABLED, justify=tk.RIGHT)
         self.sizeEntry.pack(side=tk.RIGHT)
         tk.Label(fr,text='Total Data Size : ').pack(side=tk.RIGHT)
 
