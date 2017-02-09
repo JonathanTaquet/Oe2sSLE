@@ -28,8 +28,8 @@ a = Analysis(['Oe2sSLE_GUI.py'],
              binaries=None,
              datas=added_files,
              hiddenimports=[],
-             hookspath=[],
-             runtime_hooks=[],
+             hookspath=['pyinstaller-hooks'],
+             runtime_hooks=['pyinstaller-hooks/pyi_rth__tkinter.py'],
              excludes=[],
              cipher=block_cipher)
 
