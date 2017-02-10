@@ -509,15 +509,16 @@ class SampleNumSpinbox(ROSpinbox):
         command=kwarg.get('command')
         if command:
             self.SNScommand = command
-        var=kwarg.get('textvariable')
-        if var:
+        var=kwarg.get('textvariable','')
+        if var != '':
             if self.SNSvar:
                 self.SNSvar.trace_vdelete('w', self.SNSvar_trace)
                 self.SNSvarString.trace_vdelete('w', self.SNSvarString_trace)
             self.SNSvar=var
-            self.SNSvarString=tk.StringVar()
-            self.SNSvarString.set(self.SNSvar.get())
-            kwarg['textvariable'] = self.SNSvarString
+            if var:
+                self.SNSvarString=tk.StringVar()
+                self.SNSvarString.set(self.SNSvar.get())
+                kwarg['textvariable'] = self.SNSvarString
         super().config(*arg, **kwarg)
         if var:
             self._safeSet=False
