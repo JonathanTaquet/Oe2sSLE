@@ -1864,7 +1864,11 @@ class SampleAllEditor(tk.Tk):
         tk.Frame(fr).pack(side=tk.TOP,fill=tk.Y,expand=1)
         fr.pack(side=tk.BOTTOM,fill=tk.X)
 
-        fr = tk.Frame(self)
+        fr2 = tk.Frame(self)
+
+        tk.Label(fr2, text="Swap with next(s) samples : ").grid(row=0, column=0, sticky=tk.W)
+        fr = tk.Frame(fr2)
+
         self.moveUp100Button = tk.Button(fr, text='<<<', command=lambda: [self.sampleList.move_up_selected() for i in range(100) ])
         self.moveUp100Button.pack(side=tk.LEFT)
 
@@ -1882,7 +1886,17 @@ class SampleAllEditor(tk.Tk):
 
         self.moveDown100Button = tk.Button(fr, text='>>>', command=lambda: [self.sampleList.move_down_selected() for i in range(100) ])
         self.moveDown100Button.pack(side=tk.LEFT)
-        fr.pack()
+        fr.grid(row=0, column=1)
+
+        tk.Label(fr2, text="Move to next free :").grid(row=1, column=0, sticky=tk.W)
+        fr = tk.Frame(fr2)
+        self.moveUpFreeButton = tk.Button(fr, text='|<<', command=self.sampleList.move_up_selected_to_next_free)
+        self.moveUpFreeButton.pack(side=tk.LEFT)
+        self.moveDownFreeButton = tk.Button(fr, text='>>|', command=self.sampleList.move_down_selected_to_next_free)
+        self.moveDownFreeButton.pack(side=tk.LEFT)
+        fr.grid(row=1, column=1)
+
+        fr2.pack(fill=tk.X)
 
 
         self.buttonEdit = tk.Button(self, text="Edit Selected", command=self.edit_selected)
