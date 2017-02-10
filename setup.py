@@ -24,7 +24,7 @@ class Target:
     def __init__(self, **kw):
         self.__dict__.update(kw)
         self.version = str(GUI.Oe2sSLE_VERSION[0])+"."+str(GUI.Oe2sSLE_VERSION[1])+"."+str(GUI.Oe2sSLE_VERSION[2])
-        self.copyright = "Copyright (C) 2015-2016 Jonathan Taquet"
+        self.copyright = "Copyright (C) 2015-2017 Jonathan Taquet"
         self.name = "Oe2sSLE"
 
 target = Target(

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Copyright (C) 2015 Jonathan Taquet
+Copyright (C) 2015-2017 Jonathan Taquet
 
 This file is part of Oe2sSLE (Open e2sSample.all Library Editor).
 
