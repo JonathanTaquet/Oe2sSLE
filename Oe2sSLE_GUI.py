@@ -1858,7 +1858,7 @@ class SampleAllEditor(tk.Tk):
         self.buttonDonate = tk.Button(fr, command=self.donate, image=GUI.res.pledgieIcon)
         self.buttonDonate.pack(side=tk.LEFT)
 
-        self.buttonAbout=tk.Button(fr, text="About", command=self.about)
+        self.buttonAbout=tk.Button(fr, text="About", width=10, command=self.about)
         tk.Frame(fr).pack(side=tk.TOP,fill=tk.Y,expand=1)
         self.buttonAbout.pack(side=tk.TOP)
         tk.Frame(fr).pack(side=tk.TOP,fill=tk.Y,expand=1)
@@ -1869,31 +1869,31 @@ class SampleAllEditor(tk.Tk):
         tk.Label(fr2, text="Swap with next(s) samples : ").grid(row=0, column=0, sticky=tk.W)
         fr = tk.Frame(fr2)
 
-        self.moveUp100Button = tk.Button(fr, text='<<<', command=lambda: [self.sampleList.move_up_selected() for i in range(100) ])
-        self.moveUp100Button.pack(side=tk.LEFT)
+        self.moveUp100Button = tk.Button(fr, text='<<<', width=5, command=lambda: [self.sampleList.move_up_selected() for i in range(100) ])
+        self.moveUp100Button.pack(side=tk.LEFT,padx=2)
 
-        self.moveUp10Button = tk.Button(fr, text='<<', command=lambda: [self.sampleList.move_up_selected() for i in range(10) ])
-        self.moveUp10Button.pack(side=tk.LEFT)
+        self.moveUp10Button = tk.Button(fr, text='<<', width=5, command=lambda: [self.sampleList.move_up_selected() for i in range(10) ])
+        self.moveUp10Button.pack(side=tk.LEFT,padx=2)
 
-        self.moveUpButton = tk.Button(fr, text='<', command=self.sampleList.move_up_selected)
-        self.moveUpButton.pack(side=tk.LEFT)
+        self.moveUpButton = tk.Button(fr, text='<', width=5, command=self.sampleList.move_up_selected)
+        self.moveUpButton.pack(side=tk.LEFT,padx=2)
 
-        self.moveDownButton = tk.Button(fr, text='>', command=self.sampleList.move_down_selected)
-        self.moveDownButton.pack(side=tk.LEFT)
+        self.moveDownButton = tk.Button(fr, text='>', width=5, command=self.sampleList.move_down_selected)
+        self.moveDownButton.pack(side=tk.LEFT,padx=2)
 
-        self.moveDown10Button = tk.Button(fr, text='>>', command=lambda: [self.sampleList.move_down_selected() for i in range(10) ])
-        self.moveDown10Button.pack(side=tk.LEFT)
+        self.moveDown10Button = tk.Button(fr, text='>>', width=5, command=lambda: [self.sampleList.move_down_selected() for i in range(10) ])
+        self.moveDown10Button.pack(side=tk.LEFT,padx=2)
 
-        self.moveDown100Button = tk.Button(fr, text='>>>', command=lambda: [self.sampleList.move_down_selected() for i in range(100) ])
-        self.moveDown100Button.pack(side=tk.LEFT)
+        self.moveDown100Button = tk.Button(fr, text='>>>', width=5, command=lambda: [self.sampleList.move_down_selected() for i in range(100) ])
+        self.moveDown100Button.pack(side=tk.LEFT,padx=2)
         fr.grid(row=0, column=1)
 
         tk.Label(fr2, text="Move to next free :").grid(row=1, column=0, sticky=tk.W)
         fr = tk.Frame(fr2)
-        self.moveUpFreeButton = tk.Button(fr, text='|<<', command=self.sampleList.move_up_selected_to_next_free)
-        self.moveUpFreeButton.pack(side=tk.LEFT)
-        self.moveDownFreeButton = tk.Button(fr, text='>>|', command=self.sampleList.move_down_selected_to_next_free)
-        self.moveDownFreeButton.pack(side=tk.LEFT)
+        self.moveUpFreeButton = tk.Button(fr, text='|<<', width=5, command=self.sampleList.move_up_selected_to_next_free)
+        self.moveUpFreeButton.pack(side=tk.LEFT, padx=2)
+        self.moveDownFreeButton = tk.Button(fr, text='>>|', width=5, command=self.sampleList.move_down_selected_to_next_free)
+        self.moveDownFreeButton.pack(side=tk.LEFT,padx=2)
         fr.grid(row=1, column=1)
 
         fr2.pack(fill=tk.X)
@@ -1907,33 +1907,33 @@ class SampleAllEditor(tk.Tk):
 
         fr = tk.Frame(self)
         fr2 = tk.Frame(fr)
-        self.buttonAdd = tk.Button(fr2, text="Import wav Sample(s)", command=self.import_sample)
-        self.buttonAdd.pack(side=tk.TOP, fill=tk.BOTH)
+        self.buttonImport = tk.Button(fr2, text="Import wav Sample(s)", command=self.import_sample)
+        self.buttonImport.pack(side=tk.TOP, fill=tk.BOTH)
 
-        self.buttonAdd = tk.Button(fr2, text="Import e2sSample.all", command=self.import_all_sample)
-        self.buttonAdd.pack(side=tk.TOP, fill=tk.BOTH)
+        self.buttonImportE2s = tk.Button(fr2, text="Import e2sSample.all", command=self.import_all_sample)
+        self.buttonImportE2s.pack(side=tk.TOP, fill=tk.BOTH)
         fr2.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
 
         fr2 = tk.Frame(fr, borderwidth=2)
-        self.buttonImportOptions = tk.Button(fr2, text="Import Options", command=self.import_options)
-        self.buttonImportOptions.pack(fill=None)
+        self.buttonImportOptions = tk.Button(fr2, text="Options", width=10, command=self.import_options)
+        self.buttonImportOptions.pack(fill=None,padx=5)
         fr2.pack(side=tk.LEFT, fill=None)
         fr.pack(side=tk.TOP, fill=tk.BOTH)
 
         self.buttonExp = tk.Button(self, text="Export Selected as wav", command=self.export_sample)
         self.buttonExp.pack(side=tk.TOP, fill=tk.BOTH)
         
-        self.buttonExp = tk.Button(self, text="Export all as wav", command=self.export_all_sample)
-        self.buttonExp.pack(side=tk.TOP, fill=tk.BOTH)
+        self.buttonExpAll = tk.Button(self, text="Export all as wav", command=self.export_all_sample)
+        self.buttonExpAll.pack(side=tk.TOP, fill=tk.BOTH)
 
-        self.buttonLoad = tk.Button(self, text="Open", command=self.load)
-        self.buttonLoad.pack(side=tk.LEFT,fill=tk.Y)
+        self.buttonLoad = tk.Button(self, text="Open", width=10, command=self.load)
+        self.buttonLoad.pack(side=tk.LEFT,fill=tk.Y,padx=5,pady=5)
 
-        self.buttonClear = tk.Button(self, text="Clear all", command=self.clear)
-        self.buttonClear.pack(side=tk.RIGHT)
+        self.buttonClear = tk.Button(self, text="Clear all", width=10, command=self.clear)
+        self.buttonClear.pack(side=tk.RIGHT,padx=5,pady=5)
 
-        self.buttonSaveAs = tk.Button(self, text="Save As", command=self.save_as)
-        self.buttonSaveAs.pack(side=tk.TOP,fill=tk.Y)
+        self.buttonSaveAs = tk.Button(self, text="Save As", width=10, command=self.save_as)
+        self.buttonSaveAs.pack(side=tk.TOP,fill=tk.Y,padx=5,pady=5)
 
         self.restore_binding()
 
