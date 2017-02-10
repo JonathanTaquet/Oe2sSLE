@@ -1699,13 +1699,14 @@ class SampleList(tk.Frame):
             self.samples[sample_num-self.samples[0].sample_num].set_sample_num(sample_num)
 
 
-    def exchange(self, a, b):
-        # swap osc indexes
-        a_esli = self.e2s_samples[a].get_esli()
-        b_esli = self.e2s_samples[b].get_esli()
-        a_index = a_esli.OSC_0index
-        a_esli.OSC_0index=a_esli.OSC_0index1=b_esli.OSC_0index
-        b_esli.OSC_0index=b_esli.OSC_0index1=a_index
+    def exchange(self, a, b, keep_index=False):
+        if not keep_index:
+            # swap osc indexes
+            a_esli = self.e2s_samples[a].get_esli()
+            b_esli = self.e2s_samples[b].get_esli()
+            a_index = a_esli.OSC_0index
+            a_esli.OSC_0index=a_esli.OSC_0index1=b_esli.OSC_0index
+            b_esli.OSC_0index=b_esli.OSC_0index1=a_index
         # swap samples
         self.e2s_samples[a], self.e2s_samples[b] = self.e2s_samples[b], self.e2s_samples[a]
         # update sample objects
