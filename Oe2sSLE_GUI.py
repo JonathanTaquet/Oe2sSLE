@@ -1713,15 +1713,15 @@ class SampleList(tk.Frame):
         self.update_sample(a)
         self.update_sample(b)
 
-    def move_up(self, line_num):
+    def move_up(self, line_num, keep_index=False):
         if 0 < line_num < len(self.e2s_samples):
-            self.exchange(line_num, line_num-1)
+            self.exchange(line_num, line_num-1, keep_index)
             return True
         return False
 
-    def move_down(self, line_num):
+    def move_down(self, line_num, keep_index=False):
         if 0 <= line_num < len(self.e2s_samples)-1:
-            self.exchange(line_num, line_num+1)
+            self.exchange(line_num, line_num+1, keep_index)
             return True
         return False
 
