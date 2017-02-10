@@ -1327,6 +1327,7 @@ class Sample(object):
             self.name.trace_vdelete('w', self.name_trace)
         if self.oscNum_trace:
             self.oscNum.trace_vdelete('w', self.oscNum_trace)
+        self.entryOscNum.config(textvariable=None)
         if self.oneShot_trace:
             self.oneShot.trace_vdelete('w', self.oneShot_trace)
         if self.plus12dB_trace:
@@ -1360,6 +1361,7 @@ class Sample(object):
         self.oneShot_trace = self.oneShot.trace('w', self._oneShot_set)
         self.plus12dB_trace = self.plus12dB.trace('w', self._plus12dB_set)
         self.tuneVal_trace = self.tuneVal.trace('w', self._tuneVal_set)
+        self.entryOscNum.config(textvariable=self.oscNum)
     
     def _name_set(self, *args):
         # electribe sampler uses a subset of the ascii encoding
