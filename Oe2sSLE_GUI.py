@@ -1586,6 +1586,46 @@ class SampleList(tk.Frame):
                 next = curr+1 if curr != 420 else 500
             return None
 
+    def get_next_free_index(self, direction=1, first=None, roll=False):
+        if not direction:
+            return self.get_next_free_sample_index()
+        if first is None:
+            if direction > 0:
+                curr = 0
+            if direction < 0:
+                curr = 998
+        else:
+            curr = first
+        # find sample number in the sample list
+        curr_smp_num = 0 if direction > 0 else len(self.e2s_samples)-1
+        while (direction > 0
+               and curr_smp_num < len(self.e2s_samples)
+               and self.e2s_samples[curr_smp_num].get_esli().OSC_0index < curr
+               or direction < 0
+               and curr_smp_num >= 0
+               and self.e2s_samples[curr_smp_num].get_esli().OSC_0index > curr
+               ):
+            curr_smp_num += 1 if direction > 0 else -1
+        # find next free sample number
+        while (direction > 0
+               and curr_smp_num < len(self.e2s_samples)
+               and self.e2s_samples[curr_smp_num].get_esli().OSC_0index == curr
+               or direction < 0
+               and curr_smp_num >= 0
+               and self.e2s_samples[curr_smp_num].get_esli().OSC_0index == curr
+               ):
+            curr_smp_num += 1 if direction > 0 else -1
+            curr += 1 if direction > 0 else -1
+            if 420 < curr < 500:
+                curr = 500 if direction > 0 else 420
+        if curr < 18 or curr > 998:
+            if not roll:
+                return None
+            else:
+                return self.get_next_free_index(direction, 18 if direction > 0 else 998)
+        else:
+            return (curr_smp_num, curr)
+
     def get_selected(self):
         if 0 <= self.selectV.get() < len(self.e2s_samples):
             self.show_selected()
@@ -1741,6 +1781,36 @@ class SampleList(tk.Frame):
         if self.move_down(self.selectV.get()):
             self.selectV.set(self.selectV.get()+1)
             self.show_selected()
+
+    def move_up_selected_to_next_free(self):
+        selected = self.selectV.get()
+        if 0 <= selected:
+            res = self.get_next_free_index(-1, self.e2s_samples[selected].get_esli().OSC_0index)
+            if res:
+                list_idx, osc_idx = res
+                esli = self.e2s_samples[selected].get_esli()
+                esli.OSC_0index = esli.OSC_0index1 = osc_idx
+                self.update_sample(selected)
+                while selected > list_idx+1:
+                    self.move_up(selected, keep_index=True)
+                    selected -= 1
+                self.selectV.set(selected)
+                self.show_selected()
+
+    def move_down_selected_to_next_free(self):
+        selected = self.selectV.get()
+        if 0 <= selected:
+            res = self.get_next_free_index(1, self.e2s_samples[selected].get_esli().OSC_0index)
+            if res:
+                list_idx, osc_idx = res
+                esli = self.e2s_samples[selected].get_esli()
+                esli.OSC_0index = esli.OSC_0index1 = osc_idx
+                self.update_sample(selected)
+                while selected < list_idx-1:
+                    self.move_down(selected, keep_index=True)
+                    selected += 1
+                self.selectV.set(selected)
+                self.show_selected()
 
     def remove_selected(self):
         self.remove(self.selectV.get())
