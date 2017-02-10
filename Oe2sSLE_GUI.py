@@ -1564,7 +1564,7 @@ class SampleList(tk.Frame):
             return None
 
     def update_WAVDataSize(self):
-        self.WAVDataSize.set(sum( (s.smpSize.get() for s in self.samples) ))
+        self.WAVDataSize.set(sum(len(s.get_data()) for s in self.e2s_samples))
 
     def update_scrollbar(self):
         if self.e2s_samples:
