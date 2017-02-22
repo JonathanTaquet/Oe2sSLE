@@ -1295,6 +1295,7 @@ class Sample(object):
         self.buttonPlay = tk.Button(self.frame, image=GUI.res.playIcon, command=self.play)
         self.checkStereo = tk.Checkbutton(self.frame, variable=self.stereo, command=self._stereo_command)
         self.sizeEntry = tk.Entry(self.frame, width=8, textvariable=self.smpSize, state=tk.DISABLED, justify=tk.RIGHT)
+        self.buttonEdit = tk.Button(self.frame, image=GUI.res.editIcon, command=self._on_edit)
 
         self.restore(line_num, sample_num)
 
@@ -1315,6 +1316,7 @@ class Sample(object):
         self.durationEntry.grid(row=row, column=9)
         self.checkStereo.grid(row=row, column=10)
         self.sizeEntry.grid(row=row, column=11)
+        self.buttonEdit.grid(row=row, column=12, padx=10, pady=2)
 
     def forget(self):
         self.radioButton.grid_forget()
@@ -1329,6 +1331,7 @@ class Sample(object):
         self.durationEntry.grid_forget()
         self.checkStereo.grid_forget()
         self.sizeEntry.grid_forget()
+        self.buttonEdit.grid_forget()
 
     def destroy(self):
         self.radioButton.destroy()
@@ -1343,6 +1346,7 @@ class Sample(object):
         self.durationEntry.destroy()
         self.checkStereo.destroy()
         self.sizeEntry.destroy()
+        self.buttonEdit.destroy()
 
     def set_sample_num(self, sample_num):
         self.sample_num = sample_num
@@ -1489,6 +1493,9 @@ class Sample(object):
         self.smpSize.set(len(data))
         self.master.update_WAVDataSize()
 
+    def _on_edit(self):
+        self.master.edit(self.sample_num)
+
     def play(self):
         # TODO: have a single wav player for the whole application
         self.master.play(self.e2s_sample)
@@ -1513,6 +1520,8 @@ class SampleList(tk.Frame):
         tk.Label(self.frame, text="Time (s)").grid(row=0, column=9)
         tk.Label(self.frame, text="Stereo").grid(row=0,column=10)
         tk.Label(self.frame, text="Data Size").grid(row=0, column=11)
+
+        self.sliceEditDialog = None
 
         self.selectV = tk.IntVar()
 
@@ -1821,6 +1830,13 @@ class SampleList(tk.Frame):
         riff_fmt = e2s_sample.get_fmt()
         audio.player.play_start(audio.Sound(e2s_sample.get_data().rawdata,riff_fmt))
 
+    def edit(self, smpl_num):
+        if not self.sliceEditDialog:
+            self.sliceEditDialog = SliceEditorDialog(self.master)
+        self.sliceEditDialog.sliceEditor.set_sample(self, smpl_num)
+        self.sliceEditDialog.run()
+
+
 class SampleAllEditor(tk.Tk):
     """
     TODO:
@@ -1842,8 +1858,6 @@ class SampleAllEditor(tk.Tk):
         
         # user samples are starting at ~550 but sample number must start at 501 ?
         self.import_num=550
-
-        self.sliceEditDialog = None
 
         #self.frame = VerticalScrolledFrame(self)
         #self.frame.pack(fill=tk.BOTH, expand=tk.YES)
@@ -2315,12 +2329,9 @@ class SampleAllEditor(tk.Tk):
             wd.run(fct)
 
     system = platform.system()
+
     def edit_selected(self):
-        if not self.sliceEditDialog:
-            self.sliceEditDialog = SliceEditorDialog(self)
-        smpl_num = self.sampleList.get_selected()
-        self.sliceEditDialog.sliceEditor.set_sample(self.sampleList, smpl_num)
-        self.sliceEditDialog.run()
+        self.sampleList.edit(self.sampleList.get_selected())
 
     def restore_binding(self):
         if self.system == 'Windows':
