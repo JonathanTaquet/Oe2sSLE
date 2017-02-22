@@ -1830,9 +1830,6 @@ class SampleList(tk.Frame):
                 self.selectV.set(selected)
                 self.show_selected()
 
-    def remove_selected(self):
-        self.remove(self.selectV.get())
-
     def play(self, e2s_sample):
         riff_fmt = e2s_sample.get_fmt()
         audio.player.play_start(audio.Sound(e2s_sample.get_data().rawdata,riff_fmt))
@@ -1920,9 +1917,6 @@ class SampleAllEditor(tk.Tk):
         fr.grid(row=1, column=1)
 
         fr2.pack(fill=tk.X)
-
-        self.buttonRem = tk.Button(self, text="Remove Selected", command=self.sampleList.remove_selected)
-        self.buttonRem.pack(side=tk.TOP, fill=tk.BOTH)        
 
         fr = tk.Frame(self)
         fr2 = tk.Frame(fr)
