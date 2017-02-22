@@ -1533,6 +1533,8 @@ class SampleList(tk.Frame):
         self.canvas.bind('<Configure>', self._on_configure)
 
     def _on_configure(self, event):
+        if not self.samples:
+            return
         # update the inner frame's height to fill the canvas
         new_h = event.height
         _, _, _, h = self.frame.grid_bbox(0,0,0,0)
