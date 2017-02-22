@@ -1921,10 +1921,6 @@ class SampleAllEditor(tk.Tk):
 
         fr2.pack(fill=tk.X)
 
-
-        self.buttonEdit = tk.Button(self, text="Edit Selected", command=self.edit_selected)
-        self.buttonEdit.pack(side=tk.TOP, fill=tk.BOTH)
-
         self.buttonRem = tk.Button(self, text="Remove Selected", command=self.sampleList.remove_selected)
         self.buttonRem.pack(side=tk.TOP, fill=tk.BOTH)        
 
@@ -2336,9 +2332,6 @@ class SampleAllEditor(tk.Tk):
             wd.run(fct)
 
     system = platform.system()
-
-    def edit_selected(self):
-        self.sampleList.edit(self.sampleList.get_selected())
 
     def restore_binding(self):
         if self.system == 'Windows':
