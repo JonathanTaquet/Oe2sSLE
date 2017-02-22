@@ -1296,6 +1296,7 @@ class Sample(object):
         self.checkStereo = tk.Checkbutton(self.frame, variable=self.stereo, command=self._stereo_command)
         self.sizeEntry = tk.Entry(self.frame, width=8, textvariable=self.smpSize, state=tk.DISABLED, justify=tk.RIGHT)
         self.buttonEdit = tk.Button(self.frame, image=GUI.res.editIcon, command=self._on_edit)
+        self.buttonDelete = tk.Button(self.frame, image=GUI.res.trashIcon, command=self._on_delete)
 
         self.restore(line_num, sample_num)
 
@@ -1317,6 +1318,7 @@ class Sample(object):
         self.checkStereo.grid(row=row, column=10)
         self.sizeEntry.grid(row=row, column=11)
         self.buttonEdit.grid(row=row, column=12, padx=10, pady=2)
+        self.buttonDelete.grid(row=row, column=13, padx=10, pady=2)
 
     def forget(self):
         self.radioButton.grid_forget()
@@ -1332,6 +1334,7 @@ class Sample(object):
         self.checkStereo.grid_forget()
         self.sizeEntry.grid_forget()
         self.buttonEdit.grid_forget()
+        self.buttonDelete.grid_forget()
 
     def destroy(self):
         self.radioButton.destroy()
@@ -1347,6 +1350,7 @@ class Sample(object):
         self.checkStereo.destroy()
         self.sizeEntry.destroy()
         self.buttonEdit.destroy()
+        self.buttonDelete.destroy()
 
     def set_sample_num(self, sample_num):
         self.sample_num = sample_num
@@ -1495,6 +1499,9 @@ class Sample(object):
 
     def _on_edit(self):
         self.master.edit(self.sample_num)
+
+    def _on_delete(self):
+        self.master.remove(self.sample_num)
 
     def play(self):
         # TODO: have a single wav player for the whole application

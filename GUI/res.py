@@ -22,6 +22,7 @@ import sys
 import tkinter as tk
 
 editIcon=None
+trashIcon=None
 playIcon=None
 stopIcon=None
 pledgieIcon=None
@@ -37,11 +38,13 @@ def resource_path(relative_path):
 
 def init():
     global editIcon
+    global trashIcon
     global playIcon
     global stopIcon
     global pledgieIcon
 
     editIcon=tk.PhotoImage(file=resource_path("images/edit.gif"))
+    trashIcon=tk.PhotoImage(file=resource_path("images/trash.gif"))
     playIcon=tk.PhotoImage(file=resource_path("images/play.gif"))
     stopIcon=tk.PhotoImage(file=resource_path("images/stop.gif"))
     pledgieIcon=tk.PhotoImage(file=resource_path("images/pledgie-small.gif"))
