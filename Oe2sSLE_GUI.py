@@ -48,6 +48,7 @@ from GUI.stereo_to_mono import StereoToMonoDialog
 from GUI.wait_dialog import WaitDialog
 from GUI.about_dialog import AboutDialog
 from GUI.import_options import ImportOptionsDialog, ImportOptions
+from GUI.exchange_sample_dialog import ExchangeSampleDialog
 from GUI.tooltip import ToolTip
 
 import utils
@@ -1794,6 +1795,11 @@ class SampleList(tk.Frame):
             return True
         return False
 
+    def set_selected(self, num):
+        self.selectV.set(num)
+        self.show_selected()
+
+
     def show_selected(self):
         selected = self.selectV.get()
         if 0 <= selected and self.samples[0].sample_num > selected:
@@ -1883,6 +1889,12 @@ class SampleAllEditor(tk.Tk):
         fr2 = tk.Frame(fr, borderwidth=2)
 
         tk.Frame(fr2).pack(fill=tk.Y, expand=True)
+
+        self.exchangeButton = tk.Button(fr2, image=GUI.res.exchangeIcon, command=self.exchange)
+        ToolTip(self.exchangeButton, follow_mouse=1, text="exchange with another")
+        self.exchangeButton.pack(padx=2, pady=2)
+
+        tk.Frame(fr2, height=2, bd=1, relief=tk.SUNKEN).pack(fill=tk.X,padx=2, pady=5)
 
         self.moveUp100Button = tk.Button(fr2, image=GUI.res.swap_prev100Icon, command=lambda: [self.sampleList.move_up_selected() for i in range(100) ])
         ToolTip(self.moveUp100Button, follow_mouse=1, text="swap up by 100")
@@ -1974,6 +1986,22 @@ class SampleAllEditor(tk.Tk):
         self.update_idletasks()
         width, height = (self.winfo_width(), self.winfo_height())
         self.minsize(width, height)
+
+    def exchange(self):
+        sl = self.sampleList
+        selected = sl.get_selected()
+        if selected is not None:
+            s_num = sl.e2s_samples[selected].get_esli().OSC_0index+1;
+            s_name = sl.e2s_samples[selected].get_esli().OSC_name.decode('ascii', 'ignore').split('\x00')[0];
+            exchg_with = [
+                (sl.e2s_samples[i].get_esli().OSC_0index+1,
+                 sl.e2s_samples[i].get_esli().OSC_name.decode('ascii', 'ignore').split('\x00')[0]) for i in range(len(sl.e2s_samples))
+                ]
+            dialog = ExchangeSampleDialog(self, (s_num, s_name), exchg_with)
+            self.wait_window(dialog)
+            if dialog.result is not None and dialog.result >= 0 and dialog.result != selected:
+                sl.exchange(selected, dialog.result)
+                sl.set_selected(dialog.result)
 
     def donate(self):
         webbrowser.open('https://pledgie.com/campaigns/30817')

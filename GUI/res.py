@@ -21,6 +21,7 @@ import os
 import sys
 import tkinter as tk
 
+exchangeIcon=None
 swap_nextIcon=None
 swap_next10Icon=None
 swap_next100Icon=None
@@ -46,6 +47,7 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 def init():
+    global exchangeIcon
     global swap_nextIcon
     global swap_next10Icon
     global swap_next100Icon
@@ -61,6 +63,7 @@ def init():
     global stopIcon
     global pledgieIcon
 
+    exchangeIcon=tk.PhotoImage(file=resource_path("images/exchange.gif"))
     swap_nextIcon=tk.PhotoImage(file=resource_path("images/swap-next.gif"))
     swap_next10Icon=tk.PhotoImage(file=resource_path("images/swap-next-10.gif"))
     swap_next100Icon=tk.PhotoImage(file=resource_path("images/swap-next-100.gif"))
