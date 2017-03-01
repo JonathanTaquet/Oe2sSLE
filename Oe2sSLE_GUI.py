@@ -1599,22 +1599,27 @@ class SampleList(tk.Frame):
         else:
             return 17
 
-    def get_next_free_sample_index(self):
-        max = self.find_max_sample_0index()
-        if 420 == max:
-            max = 499
-        if max<998:
-            return max+1
+    def get_next_free_sample_index(self, _from=None):
+        if _from is None:
+            max = self.find_max_sample_0index()
+            if 420 == max:
+                max = 499
+            if max<998:
+                return max+1
+            else:
+                _from = 18
         else:
             # max is 998, find first free
             # e2s_samples are currently ordered by OSC_0index
-            next=18
+            next=_from
             for e2s_sample in self.e2s_samples:
                 curr = e2s_sample.get_esli().OSC_0index
                 if curr > next:
-                    return next
-                next = curr+1 if curr != 420 else 500
-            return None
+                    break
+                if curr >= _from:
+                    next = curr+1 if curr != 420 else 500
+            return next if next < 999 else (
+                None if _from == 18 else self.get_next_free_sample_index(18))
 
     def get_next_free_index(self, direction=1, first=None, roll=False):
         if not direction:
@@ -2224,7 +2229,7 @@ class SampleAllEditor(tk.Tk):
                 # Register the sample
                 #
 
-                nextsampleIndex = self.sampleList.get_next_free_sample_index()
+                nextsampleIndex = self.sampleList.get_next_free_sample_index(self.import_opts.smp_num_from-1)
                 if nextsampleIndex is not None:
                     esli.OSC_0index = esli.OSC_0index1 = nextsampleIndex
                     
@@ -2298,7 +2303,7 @@ class SampleAllEditor(tk.Tk):
                     # Register the sample
                     #
 
-                    nextsampleIndex = self.sampleList.get_next_free_sample_index()
+                    nextsampleIndex = self.sampleList.get_next_free_sample_index(self.import_opts.smp_num_from-1)
                     if nextsampleIndex is not None:
                         esli.OSC_0index = esli.OSC_0index1 = nextsampleIndex
                         

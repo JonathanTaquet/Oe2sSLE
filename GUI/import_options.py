@@ -33,6 +33,7 @@ class ImportOptions:
         self.force_osc_cat = 0
         self.force_loop_type = 0
         self.force_plus_12_db = 0
+        self.smp_num_from = 19
 
 
 osc_cat_strs = tuple(
@@ -78,6 +79,9 @@ class ImportOptionsDialog(tk.Toplevel):
         self.force_loop_type.set(options.force_loop_type)
         self.force_plus_12_db.set(options.force_plus_12_db)
 
+        self.smp_num_from = tk.IntVar()
+        self.smp_num_from.set(options.smp_num_from)
+
         fr = tk.Frame(self)
 
         tk.Label(fr, text="OSC Cat.").grid(row=0, column=1)
@@ -118,6 +122,18 @@ class ImportOptionsDialog(tk.Toplevel):
                 fr,
                 variable=self.force_plus_12_db
             ).grid(row=2, column=3)
+
+        fr.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+
+        fr = tk.Frame(self)
+
+        tk.Label(fr, text="From #Num : ").pack(side=tk.LEFT)
+        ROCombobox(
+                fr,
+                values=list(range(19,422))+list(range(501,1000)),
+                width=3,
+                textvariable=self.smp_num_from
+            ).pack(side=tk.LEFT)
 
         fr.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
@@ -163,6 +179,7 @@ class ImportOptionsDialog(tk.Toplevel):
         self.options.force_osc_cat = self.force_osc_cat.get()
         self.options.force_loop_type = self.force_loop_type.get()
         self.options.force_plus_12_db = self.force_plus_12_db.get()
+        self.options.smp_num_from = self.smp_num_from.get()
 
     #
     # standard button semantics
