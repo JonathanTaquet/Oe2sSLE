@@ -48,6 +48,7 @@ from GUI.stereo_to_mono import StereoToMonoDialog
 from GUI.wait_dialog import WaitDialog
 from GUI.about_dialog import AboutDialog
 from GUI.import_options import ImportOptionsDialog, ImportOptions
+from GUI.tooltip import ToolTip
 
 import utils
 
@@ -1306,19 +1307,19 @@ class Sample(object):
 
     def grid(self, row):
         self.radioButton.grid(row=row, column=0)
-        self.entryOscNum.grid(row=row, column=1)
-        self.entryName.grid(row=row, column=2)
-        self.entryOscCat.grid(row=row, column=3)
-        self.checkOneShot.grid(row=row,column=4)
-        self.check12dB.grid(row=row,column=5)
-        self.entryTune.grid(row=row,column=6)
-        self.buttonPlay.grid(row=row, column=7)
-        self.samplingFreqEntry.grid(row=row, column=8)
-        self.durationEntry.grid(row=row, column=9)
-        self.checkStereo.grid(row=row, column=10)
-        self.sizeEntry.grid(row=row, column=11)
-        self.buttonEdit.grid(row=row, column=12, padx=10, pady=2)
-        self.buttonDelete.grid(row=row, column=13, padx=10, pady=2)
+        self.entryOscNum.grid(row=row, column=3)
+        self.entryName.grid(row=row, column=4)
+        self.entryOscCat.grid(row=row, column=5)
+        self.checkOneShot.grid(row=row,column=6)
+        self.check12dB.grid(row=row,column=7)
+        self.entryTune.grid(row=row,column=8)
+        self.buttonPlay.grid(row=row, column=9)
+        self.samplingFreqEntry.grid(row=row, column=10)
+        self.durationEntry.grid(row=row, column=11)
+        self.checkStereo.grid(row=row, column=12)
+        self.sizeEntry.grid(row=row, column=13)
+        self.buttonEdit.grid(row=row, column=14, padx=10, pady=2)
+        self.buttonDelete.grid(row=row, column=15, padx=10, pady=2)
 
     def forget(self):
         self.radioButton.grid_forget()
@@ -1508,7 +1509,7 @@ class Sample(object):
         self.master.play(self.e2s_sample)
         
 class SampleList(tk.Frame):
-    def __init__(self, *arg, **kwarg):
+    def __init__(self, parent, *arg, **kwarg):
         super().__init__(*arg, **kwarg)
         self.vscrollbar = tk.ttk.Scrollbar(self, orient=tk.VERTICAL, command=self.on_scroll)
         self.vscrollbar.pack(fill=tk.Y, side=tk.RIGHT)
@@ -1517,16 +1518,24 @@ class SampleList(tk.Frame):
         self.frame = tk.Frame(self.canvas)
         self.frame_id = self.canvas.create_window(0, 0, window=self.frame, anchor=tk.NW)
 
-        tk.Label(self.frame, text="#Num").grid(row=0, column=1)
-        tk.Label(self.frame, text="Name").grid(row=0, column=2)
-        tk.Label(self.frame, text="Cat.").grid(row=0, column=3)
-        tk.Label(self.frame, text="1-shot").grid(row=0, column=4)
-        tk.Label(self.frame, text="+12dB").grid(row=0, column=5)
-        tk.Label(self.frame, text="Tune").grid(row=0, column=6)
-        tk.Label(self.frame, text="Freq (Hz)").grid(row=0, column=8)
-        tk.Label(self.frame, text="Time (s)").grid(row=0, column=9)
-        tk.Label(self.frame, text="Stereo").grid(row=0,column=10)
-        tk.Label(self.frame, text="Data Size").grid(row=0, column=11)
+        self.parent = parent
+
+        tk.Label(self.frame, text="#Num").grid(row=0, column=3)
+        tk.Label(self.frame, text="Name").grid(row=0, column=4)
+        tk.Label(self.frame, text="Cat.").grid(row=0, column=5)
+        tk.Label(self.frame, text="1-shot").grid(row=0, column=6)
+        tk.Label(self.frame, text="+12dB").grid(row=0, column=7)
+        tk.Label(self.frame, text="Tune").grid(row=0, column=8)
+        tk.Label(self.frame, text="Freq (Hz)").grid(row=0, column=10)
+        tk.Label(self.frame, text="Time (s)").grid(row=0, column=11)
+        tk.Label(self.frame, text="Stereo").grid(row=0,column=12)
+        tk.Label(self.frame, text="Data Size").grid(row=0, column=13)
+
+        tk.Frame(self.frame, width=2, bd=1, relief=tk.SUNKEN).grid(row=0, column=1, rowspan=999, sticky=tk.N+tk.S)
+        self.fill = tk.Label(self.frame)
+        self.fill.grid(row=998, column=2, columnspan=12, sticky=tk.NSEW)
+        tk.Grid.rowconfigure(self.frame, 998, weight=1)
+        self.fill.config(height=self.canvas.winfo_reqheight())
 
         self.sliceEditDialog = None
 
@@ -1549,6 +1558,8 @@ class SampleList(tk.Frame):
         self.canvas.bind('<Configure>', self._on_configure)
 
     def _on_configure(self, event):
+        if self.canvas.winfo_height() != self.fill.winfo_height():
+            self.fill.config(height=self.canvas.winfo_height())
         if not self.samples:
             return
         # update the inner frame's height to fill the canvas
@@ -1836,7 +1847,7 @@ class SampleList(tk.Frame):
 
     def edit(self, smpl_num):
         if not self.sliceEditDialog:
-            self.sliceEditDialog = SliceEditorDialog(self.master)
+            self.sliceEditDialog = SliceEditorDialog(self.parent)
         self.sliceEditDialog.sliceEditor.set_sample(self, smpl_num)
         self.sliceEditDialog.run()
 
@@ -1866,9 +1877,53 @@ class SampleAllEditor(tk.Tk):
         #self.frame = VerticalScrolledFrame(self)
         #self.frame.pack(fill=tk.BOTH, expand=tk.YES)
         #self.sampleList = SampleList(self.frame.interior)
-        self.sampleList = SampleList(self, borderwidth=2, relief='sunken')
-        self.sampleList.pack(fill=tk.BOTH, expand=tk.YES)
-        
+        fr = tk.Frame(self,borderwidth=2, relief='sunken')
+        self.sampleList = SampleList(self, fr, borderwidth=2)
+
+        fr2 = tk.Frame(fr, borderwidth=2)
+
+        tk.Frame(fr2).pack(fill=tk.Y, expand=True)
+
+        self.moveUp100Button = tk.Button(fr2, image=GUI.res.swap_prev100Icon, command=lambda: [self.sampleList.move_up_selected() for i in range(100) ])
+        ToolTip(self.moveUp100Button, follow_mouse=1, text="swap up by 100")
+        self.moveUp100Button.pack(padx=2, pady=2)
+
+        self.moveUp10Button = tk.Button(fr2, image=GUI.res.swap_prev10Icon, command=lambda: [self.sampleList.move_up_selected() for i in range(10) ])
+        ToolTip(self.moveUp10Button, follow_mouse=1, text="swap up by 10")
+        self.moveUp10Button.pack(padx=2, pady=2)
+
+        self.moveUpButton = tk.Button(fr2, image=GUI.res.swap_prevIcon, command=self.sampleList.move_up_selected)
+        ToolTip(self.moveUpButton, follow_mouse=1, text="swap up")
+        self.moveUpButton.pack(padx=2, pady=2)
+
+        self.moveDownButton = tk.Button(fr2, image=GUI.res.swap_nextIcon, command=self.sampleList.move_down_selected)
+        ToolTip(self.moveDownButton, follow_mouse=1, text="swap down")
+        self.moveDownButton.pack(padx=2, pady=2)
+
+        self.moveDown10Button = tk.Button(fr2, image=GUI.res.swap_next10Icon, command=lambda: [self.sampleList.move_down_selected() for i in range(10) ])
+        ToolTip(self.moveDown10Button, follow_mouse=1, text="swap down by 10")
+        self.moveDown10Button.pack(padx=2, pady=2)
+
+        self.moveDown100Button = tk.Button(fr2, image=GUI.res.swap_next100Icon, command=lambda: [self.sampleList.move_down_selected() for i in range(100) ])
+        ToolTip(self.moveDown100Button, follow_mouse=1, text="swap down by 100")
+        self.moveDown100Button.pack(padx=2, pady=2)
+
+        tk.Frame(fr2, height=2, bd=1, relief=tk.SUNKEN).pack(fill=tk.X,padx=2, pady=5)
+
+        self.moveUpFreeButton = tk.Button(fr2, image=GUI.res.prev_freeIcon, command=self.sampleList.move_up_selected_to_next_free)
+        ToolTip(self.moveUpFreeButton, follow_mouse=1, text="move up to next free")
+        self.moveUpFreeButton.pack(padx=2, pady=2)
+        self.moveDownFreeButton = tk.Button(fr2, image=GUI.res.next_freeIcon, command=self.sampleList.move_down_selected_to_next_free)
+        ToolTip(self.moveDownFreeButton, follow_mouse=1, text="move down to next free")
+        self.moveDownFreeButton.pack(padx=2, pady=2)
+
+        tk.Frame(fr2).pack(fill=tk.Y, expand=True)
+
+        fr2.pack(side=tk.LEFT, fill=tk.Y)
+
+        self.sampleList.pack(side=tk.LEFT, fill=tk.BOTH, expand=tk.YES)
+        fr.pack(fill=tk.BOTH, expand=tk.YES)
+
         fr = tk.Frame(self,borderwidth=2, relief='sunken')
         tk.Label(fr,text='/ '+str(e2s.WAVDataMaxSize)).pack(side=tk.RIGHT)
         self.sizeEntry = MaxValueEntry(fr, e2s.WAVDataMaxSize, width=8, textvariable=self.sampleList.WAVDataSize, state=tk.DISABLED, justify=tk.RIGHT)
@@ -1883,40 +1938,6 @@ class SampleAllEditor(tk.Tk):
         self.buttonAbout.pack(side=tk.TOP)
         tk.Frame(fr).pack(side=tk.TOP,fill=tk.Y,expand=1)
         fr.pack(side=tk.BOTTOM,fill=tk.X)
-
-        fr2 = tk.Frame(self)
-
-        tk.Label(fr2, text="Swap with next(s) samples : ").grid(row=0, column=0, sticky=tk.W)
-        fr = tk.Frame(fr2)
-
-        self.moveUp100Button = tk.Button(fr, text='<<<', width=5, command=lambda: [self.sampleList.move_up_selected() for i in range(100) ])
-        self.moveUp100Button.pack(side=tk.LEFT,padx=2)
-
-        self.moveUp10Button = tk.Button(fr, text='<<', width=5, command=lambda: [self.sampleList.move_up_selected() for i in range(10) ])
-        self.moveUp10Button.pack(side=tk.LEFT,padx=2)
-
-        self.moveUpButton = tk.Button(fr, text='<', width=5, command=self.sampleList.move_up_selected)
-        self.moveUpButton.pack(side=tk.LEFT,padx=2)
-
-        self.moveDownButton = tk.Button(fr, text='>', width=5, command=self.sampleList.move_down_selected)
-        self.moveDownButton.pack(side=tk.LEFT,padx=2)
-
-        self.moveDown10Button = tk.Button(fr, text='>>', width=5, command=lambda: [self.sampleList.move_down_selected() for i in range(10) ])
-        self.moveDown10Button.pack(side=tk.LEFT,padx=2)
-
-        self.moveDown100Button = tk.Button(fr, text='>>>', width=5, command=lambda: [self.sampleList.move_down_selected() for i in range(100) ])
-        self.moveDown100Button.pack(side=tk.LEFT,padx=2)
-        fr.grid(row=0, column=1)
-
-        tk.Label(fr2, text="Move to next free :").grid(row=1, column=0, sticky=tk.W)
-        fr = tk.Frame(fr2)
-        self.moveUpFreeButton = tk.Button(fr, text='|<<', width=5, command=self.sampleList.move_up_selected_to_next_free)
-        self.moveUpFreeButton.pack(side=tk.LEFT, padx=2)
-        self.moveDownFreeButton = tk.Button(fr, text='>>|', width=5, command=self.sampleList.move_down_selected_to_next_free)
-        self.moveDownFreeButton.pack(side=tk.LEFT,padx=2)
-        fr.grid(row=1, column=1)
-
-        fr2.pack(fill=tk.X)
 
         fr = tk.Frame(self)
         fr2 = tk.Frame(fr)

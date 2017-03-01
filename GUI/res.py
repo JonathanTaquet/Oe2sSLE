@@ -21,6 +21,15 @@ import os
 import sys
 import tkinter as tk
 
+swap_nextIcon=None
+swap_next10Icon=None
+swap_next100Icon=None
+swap_prevIcon=None
+swap_prev10Icon=None
+swap_prev100Icon=None
+next_freeIcon=None
+prev_freeIcon=None
+
 editIcon=None
 trashIcon=None
 playIcon=None
@@ -37,11 +46,29 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 def init():
+    global swap_nextIcon
+    global swap_next10Icon
+    global swap_next100Icon
+    global swap_prevIcon
+    global swap_prev10Icon
+    global swap_prev100Icon
+    global next_freeIcon
+    global prev_freeIcon
+
     global editIcon
     global trashIcon
     global playIcon
     global stopIcon
     global pledgieIcon
+
+    swap_nextIcon=tk.PhotoImage(file=resource_path("images/swap-next.gif"))
+    swap_next10Icon=tk.PhotoImage(file=resource_path("images/swap-next-10.gif"))
+    swap_next100Icon=tk.PhotoImage(file=resource_path("images/swap-next-100.gif"))
+    swap_prevIcon=tk.PhotoImage(file=resource_path("images/swap-prev.gif"))
+    swap_prev10Icon=tk.PhotoImage(file=resource_path("images/swap-prev-10.gif"))
+    swap_prev100Icon=tk.PhotoImage(file=resource_path("images/swap-prev-100.gif"))
+    next_freeIcon=tk.PhotoImage(file=resource_path("images/next-free.gif"))
+    prev_freeIcon=tk.PhotoImage(file=resource_path("images/prev-free.gif"))
 
     editIcon=tk.PhotoImage(file=resource_path("images/edit.gif"))
     trashIcon=tk.PhotoImage(file=resource_path("images/trash.gif"))
