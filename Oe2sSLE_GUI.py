@@ -1802,7 +1802,7 @@ class SampleList(tk.Frame):
 
     def move_up_selected_to_next_free(self):
         selected = self.selectV.get()
-        if 0 <= selected:
+        if 0 <= selected < len(self.e2s_samples):
             res = self.get_next_free_index(-1, self.e2s_samples[selected].get_esli().OSC_0index)
             if res:
                 list_idx, osc_idx = res
@@ -1817,7 +1817,7 @@ class SampleList(tk.Frame):
 
     def move_down_selected_to_next_free(self):
         selected = self.selectV.get()
-        if 0 <= selected:
+        if 0 <= selected < len(self.e2s_samples):
             res = self.get_next_free_index(1, self.e2s_samples[selected].get_esli().OSC_0index)
             if res:
                 list_idx, osc_idx = res
