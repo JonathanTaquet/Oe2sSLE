@@ -35,6 +35,7 @@ editIcon=None
 trashIcon=None
 playIcon=None
 stopIcon=None
+stop_smallIcon=None
 pledgieIcon=None
 
 # for pyIntaller bundled executable
@@ -61,6 +62,7 @@ def init():
     global trashIcon
     global playIcon
     global stopIcon
+    global stop_smallIcon
     global pledgieIcon
 
     exchangeIcon=tk.PhotoImage(file=resource_path("images/exchange.gif"))
@@ -77,4 +79,5 @@ def init():
     trashIcon=tk.PhotoImage(file=resource_path("images/trash.gif"))
     playIcon=tk.PhotoImage(file=resource_path("images/play.gif"))
     stopIcon=tk.PhotoImage(file=resource_path("images/stop.gif"))
+    stop_smallIcon=tk.PhotoImage(file=resource_path("images/stop-small.gif"))
     pledgieIcon=tk.PhotoImage(file=resource_path("images/pledgie-small.gif"))

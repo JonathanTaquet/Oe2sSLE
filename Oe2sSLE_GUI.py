@@ -1527,6 +1527,7 @@ class SampleList(tk.Frame):
         tk.Label(self.frame, text="1-shot").grid(row=0, column=6)
         tk.Label(self.frame, text="+12dB").grid(row=0, column=7)
         tk.Label(self.frame, text="Tune").grid(row=0, column=8)
+        tk.Button(self.frame, image=GUI.res.stop_smallIcon, command=self.play_stop).grid(row=0, column=9, padx=5)
         tk.Label(self.frame, text="Freq (Hz)").grid(row=0, column=10)
         tk.Label(self.frame, text="Time (s)").grid(row=0, column=11)
         tk.Label(self.frame, text="Stereo").grid(row=0,column=12)
@@ -1855,6 +1856,9 @@ class SampleList(tk.Frame):
     def play(self, e2s_sample):
         riff_fmt = e2s_sample.get_fmt()
         audio.player.play_start(audio.Sound(e2s_sample.get_data().rawdata,riff_fmt))
+
+    def play_stop(self):
+        audio.player.play_stop()
 
     def edit(self, smpl_num):
         if not self.sliceEditDialog:
