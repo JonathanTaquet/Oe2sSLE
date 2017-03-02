@@ -1997,9 +1997,6 @@ class SampleAllEditor(tk.Tk):
         fr2.pack(side=tk.LEFT, fill=None)
         fr.pack(side=tk.TOP, fill=tk.BOTH)
 
-        self.buttonExp = tk.Button(self, text="Export Selected as wav", command=self.export_sample)
-        self.buttonExp.pack(side=tk.TOP, fill=tk.BOTH)
-        
         self.buttonExpAll = tk.Button(self, text="Export all as wav", command=self.export_all_sample)
         self.buttonExpAll.pack(side=tk.TOP, fill=tk.BOTH)
 
@@ -2347,24 +2344,6 @@ class SampleAllEditor(tk.Tk):
 
             wd = WaitDialog(self)
             wd.run(fct)
-
-    def export_sample(self):
-        if self.sampleList.samples:
-            sn=self.sampleList.get_selected()
-            e2s_sample=self.sampleList.e2s_samples[sn]
-            oscNum=e2s_sample.get_esli().OSC_0index+1
-            oscName=e2s_sample.get_esli().OSC_name.decode('ascii', 'ignore').split('\x00')[0]
-            filename = tk.filedialog.asksaveasfilename(parent=self,title="Export sample as",defaultextension='.wav',filetypes=(('Wav Files','*.wav'), ('All Files','*.*'))
-                                                      ,initialfile="{:0>3}_{}.wav".format(oscNum,oscName))
-            if filename:
-                try:
-                    with open(filename, 'wb') as f:
-                        e2s_sample.write(f, export_smpl=True, export_cue=True)
-                except Exception as e:
-                    tk.messagebox.showwarning(
-                    "Export sample as",
-                    "Cannot save sample as:\n{}\nError message:\n{}".format(filename, e)
-                    )
 
     def export_all_sample(self):
         if self.sampleList.samples:
