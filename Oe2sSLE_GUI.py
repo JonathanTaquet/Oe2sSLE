@@ -1285,6 +1285,7 @@ class Sample(object):
         self.tuneVal_trace = None
 
         self.radioButton = tk.Radiobutton(self.frame, variable=self.master.selectV)
+        self.exportButton = tk.Button(self.frame, image=GUI.res.exportIcon, command=self._on_export)
         self.durationEntry = tk.Label(self.frame, width=8, state=tk.DISABLED, relief=tk.SUNKEN, anchor=tk.E)
         self.entryOscCat = ROCombobox(self.frame, values=Sample.OSC_caths, width=8, command=self._oscCat_set)
         self.entryOscNum = SampleNumSpinbox(self.frame,width=3, textvariable=self.oscNum,command=self._oscNum_command)
@@ -1320,10 +1321,12 @@ class Sample(object):
         self.checkStereo.grid(row=row, column=12)
         self.sizeEntry.grid(row=row, column=13)
         self.buttonEdit.grid(row=row, column=14, padx=10, pady=2)
+        self.exportButton.grid(row=row, column=15, padx=10)
         self.buttonDelete.grid(row=row, column=15, padx=10, pady=2)
 
     def forget(self):
         self.radioButton.grid_forget()
+        self.exportButton.grid_forget()
         self.entryOscNum.grid_forget()
         self.entryName.grid_forget()
         self.entryOscCat.grid_forget()
@@ -1340,6 +1343,7 @@ class Sample(object):
 
     def destroy(self):
         self.radioButton.destroy()
+        self.exportButton.destroy()
         self.entryOscNum.destroy()
         self.entryName.destroy()
         self.entryOscCat.destroy()
@@ -1498,6 +1502,9 @@ class Sample(object):
         data = self.e2s_sample.get_data()
         self.smpSize.set(len(data))
         self.master.update_WAVDataSize()
+
+    def _on_export(self):
+        self.master.export(self.e2s_sample)
 
     def _on_edit(self):
         self.master.edit(self.sample_num)
@@ -1865,6 +1872,21 @@ class SampleList(tk.Frame):
             self.sliceEditDialog = SliceEditorDialog(self.parent)
         self.sliceEditDialog.sliceEditor.set_sample(self, smpl_num)
         self.sliceEditDialog.run()
+
+    def export(self, e2s_sample):
+        oscNum=e2s_sample.get_esli().OSC_0index+1
+        oscName=e2s_sample.get_esli().OSC_name.decode('ascii', 'ignore').split('\x00')[0]
+        filename = tk.filedialog.asksaveasfilename(parent=self.parent,title="Export sample as",defaultextension='.wav',filetypes=(('Wav Files','*.wav'), ('All Files','*.*'))
+                                                    ,initialfile="{:0>3}_{}.wav".format(oscNum,oscName))
+        if filename:
+            try:
+                with open(filename, 'wb') as f:
+                    e2s_sample.write(f, export_smpl=True, export_cue=True)
+            except Exception as e:
+                tk.messagebox.showwarning(
+                "Export sample as",
+                "Cannot save sample as:\n{}\nError message:\n{}".format(filename, e)
+                )
 
 
 class SampleAllEditor(tk.Tk):

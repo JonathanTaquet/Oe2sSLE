@@ -31,6 +31,7 @@ swap_prev100Icon=None
 next_freeIcon=None
 prev_freeIcon=None
 
+exportIcon=None
 editIcon=None
 trashIcon=None
 playIcon=None
@@ -58,6 +59,7 @@ def init():
     global next_freeIcon
     global prev_freeIcon
 
+    global exportIcon
     global editIcon
     global trashIcon
     global playIcon
@@ -75,6 +77,7 @@ def init():
     next_freeIcon=tk.PhotoImage(file=resource_path("images/next-free.gif"))
     prev_freeIcon=tk.PhotoImage(file=resource_path("images/prev-free.gif"))
 
+    exportIcon=tk.PhotoImage(file=resource_path("images/export.gif"))
     editIcon=tk.PhotoImage(file=resource_path("images/edit.gif"))
     trashIcon=tk.PhotoImage(file=resource_path("images/trash.gif"))
     playIcon=tk.PhotoImage(file=resource_path("images/play.gif"))
