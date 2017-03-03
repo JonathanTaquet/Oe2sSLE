@@ -24,17 +24,7 @@ import tkinter as tk
 
 from GUI.widgets import ROCombobox
 
-
-class ImportOptions:
-    def __init__(self):
-        self.osc_cat = 'User'
-        self.loop_type = 0
-        self.plus_12_db = 0
-        self.force_osc_cat = 0
-        self.force_loop_type = 0
-        self.force_plus_12_db = 0
-        self.smp_num_from = 19
-
+from e2s_sample_import import ImportOptions
 
 osc_cat_strs = tuple(
     e2s.esli_OSC_cat_to_str[k]

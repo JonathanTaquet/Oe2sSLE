@@ -31,7 +31,6 @@ import sys
 import RIFF
 import e2s_sample_all as e2s
 from VerticalScrolledFrame import VerticalScrolledFrame
-import wav_tools
 
 import os
 import os.path
@@ -50,6 +49,8 @@ from GUI.about_dialog import AboutDialog
 from GUI.import_options import ImportOptionsDialog, ImportOptions
 from GUI.exchange_sample_dialog import ExchangeSampleDialog
 from GUI.tooltip import ToolTip
+
+import e2s_sample_import
 
 import utils
 
@@ -1888,6 +1889,9 @@ class SampleList(tk.Frame):
                 "Cannot save sample as:\n{}\nError message:\n{}".format(filename, e)
                 )
 
+class ToManySamples(Exception):
+    """Exception raised when registering a new sample while e2sSample is full."""
+    pass
 
 class SampleAllEditor(tk.Tk):
     """
@@ -1907,9 +1911,6 @@ class SampleAllEditor(tk.Tk):
         # Set the window title
         self.wm_title("Open e2sSample.all Library Editor")
         self.minsize(width=600,height=500)
-        
-        # user samples are starting at ~550 but sample number must start at 501 ?
-        self.import_num=550
 
         #self.frame = VerticalScrolledFrame(self)
         #self.frame.pack(fill=tk.BOTH, expand=tk.YES)
@@ -2100,122 +2101,44 @@ class SampleAllEditor(tk.Tk):
     def import_sample(self):
         filenames = tk.filedialog.askopenfilenames(parent=self,title="Select WAV file(s) to import",filetypes=(('Wav Files','*.wav'), ('All Files','*.*')))
         def fct():
-            converted = [[],[]] # (8 bits, 24 bits)
+            num_converted = dict()
             for filename in filenames:
                 try:
-                    with open(filename, 'rb') as f:
-                        sample = e2s.e2s_sample(f)
-                
-                    #check format
-                    fmt = sample.get_fmt()
-                    if fmt.formatTag != fmt.WAVE_FORMAT_PCM:
-                        tk.messagebox.showwarning(
-                        "Import WAV",
-                        "Cannot use this file:\n{}\nWAV format must be WAVE_FORMAT_PCM".format(filename)
-                        )
-                        continue
-                    # electribe and Oe2sSLE do not allow empty samples
-                    if not len(sample.get_data()):
-                        tk.messagebox.showwarning(
-                        "Import WAV",
-                        "Cannot use this file:\n{}\nNo data: empty samples are not allowed".format(filename)
-                        )
-                        continue
-                    if fmt.bitPerSample != 16:
-                        if fmt.bitPerSample == 8:
-                            wav_tools.wav_pcm_8b_to_16b(sample)
-                            converted[0] += [filename]
-                        elif fmt.bitPerSample == 24:
-                            wav_tools.wav_pcm_24b_to_16b(sample)
-                            converted[1] += [filename]
-                        else:
-                            tk.messagebox.showwarning(
-                            "Import WAV",
-                            "Cannot use this file:\n{}\nWAV format must preferably use 16 bits per sample.\n" +
-                            "8 bits and old 24 bits per sample are also supported but will be converted to 16 bits.\n"
-                            "Convert your file before importing it.".format(filename)
-                            )
-                            continue
-                        fmt = sample.get_fmt()
-                
-                    if not sample.RIFF.chunkList.get_chunk(b'korg'):
-                        korg_data=e2s.RIFF_korg()
-                        korg_chunk = RIFF.Chunk(header=RIFF.ChunkHeader(id=b'korg'),data=korg_data)
-                        sample.RIFF.chunkList.chunks.append(korg_chunk)
-                        sample.header.size += len(korg_chunk)
-                
-                    korg_chunk = sample.RIFF.chunkList.get_chunk(b'korg')
-                
-                    esli_chunk = korg_chunk.data.chunkList.get_chunk(b'esli')
-                    if not esli_chunk:
-                        esli = e2s.RIFF_korg_esli()
-                        esli_chunk = RIFF.Chunk(header=RIFF.ChunkHeader(id=b'esli'),data=esli)
-                        korg_chunk.data.chunkList.chunks.append(esli_chunk)
-                        esli.OSC_name = bytes(os.path.splitext(os.path.basename(filename))[0],'ascii','ignore')
-                        #todo funtion for that:
-                        data = sample.get_data()
-                        esli.samplingFreq = fmt.samplesPerSec
-                        esli.OSC_EndPoint_offset = esli.OSC_LoopStartPoint_offset = len(data) - fmt.blockAlign
-                        esli.WAV_dataSize = len(data)
-                        if fmt.blockAlign == 4:
-                            # stereo
-                            esli.useChan1 = True
-                        # by default use maximum volume (not like electribe that computes a good value)
-                        esli.playVolume = 65535
+                    sample, converted_from = e2s_sample_import.from_wav(filename, self.import_opts)
+                    if converted_from:
+                        num_converted[converted_from] = num_converted.get(converted_from, 0) + 1
+                    self.register_new_sample(sample)
 
-                        # use options defaults
-                        esli.OSC_category = esli.OSC_category = e2s.esli_str_to_OSC_cat[self.import_opts.osc_cat]
-                        esli.playLevel12dB = self.import_opts.plus_12_db
+                except e2s_sample_import.NotWaveFormatPcm:
+                    tk.messagebox.showwarning(
+                    "Import WAV",
+                    "Cannot use this file:\n{}\nWAV format must be WAVE_FORMAT_PCM".format(filename)
+                    )
+                    continue
 
-                        esli.OSC_importNum = self.import_num
-                        self.import_num += 1
-                        # by default play speed is same as indicated by Frequency
-                        esli.playLogPeriod = 65535 if fmt.samplesPerSec == 0 else max(0, int(round(63132-math.log2(fmt.samplesPerSec)*3072)))
-                        esli_chunk.header.size += len(esli_chunk)
-                        sample.header.size += len(esli_chunk)
+                except e2s_sample_import.EmptyWav:
+                    tk.messagebox.showwarning(
+                    "Import WAV",
+                    "Cannot use this file:\n{}\nNo data: empty samples are not allowed".format(filename)
+                    )
+                    continue
 
-                        # check if smpl chunk is used
-                        smpl_chunk = sample.RIFF.chunkList.get_chunk(b'smpl')
-                        smpl_used = False
-                        if smpl_chunk:
-                            # use it to initialize loop point
-                            if smpl_chunk.data.numSampleLoops > 0:
-                                # todo: if several LoopData, propose to generate several wavs ?
-                                smpl_loop = smpl_chunk.data.loops[0]
-                                if smpl_loop.playCount != 1:
-                                    # looping sample
-                                    start = smpl_loop.start*fmt.blockAlign
-                                    end = smpl_loop.end*fmt.blockAlign
-                                    if start < end and end <= len(data) - fmt.blockAlign:
-                                        esli.OSC_LoopStartPoint_offset = start - esli.OSC_StartPoint_address
-                                        esli.OSC_OneShot = 0
-                                        esli.OSC_EndPoint_offset = end - esli.OSC_StartPoint_address
-                                        smpl_used = True
-                        if not smpl_used and self.import_opts.loop_type == 1:
-                            # loop all
-                            esli.OSC_LoopStartPoint_offset = 0
-                            esli.OSC_OneShot = 0
-                        # check if cue chunk is used
-                        cue_chunk = sample.RIFF.chunkList.get_chunk(b'cue ')
-                        if cue_chunk:
-                            num_cue_points = cue_chunk.data.numCuePoints
-                            num_slices = 0
-                            num_samples = len(data) // fmt.blockAlign
-                            for cue_point_num in range(num_cue_points):
-                                cue_point = cue_chunk.data.cuePoints[cue_point_num]
-                                if cue_point.fccChunk != b'data' or cue_point.sampleOffset >= num_samples:
-                                    # unhandled cue_point
-                                    continue
-                                else:
-                                    esli.slices[num_slices].start = cue_point.sampleOffset
-                                    esli.slices[num_slices].length = num_samples - cue_point.sampleOffset
-                                    if num_slices > 0:
-                                        esli.slices[num_slices-1].length = esli.slices[num_slices].start - esli.slices[num_slices-1].start
-                                    num_slices += 1
-                                    if num_slices >= 64:
-                                        break
-                    else:
-                        esli = esli_chunk.data
+                except e2s_sample_import.NotSupportedBitPerSample:
+                    tk.messagebox.showwarning(
+                    "Import WAV",
+                    "Cannot use this file:\n{}\nWAV format must preferably use 16 bits per sample.\n" +
+                    "8 bits and old 24 bits per sample are also supported but will be converted to 16 bits.\n"
+                    "Convert your file before importing it.".format(filename)
+                    )
+                    continue
+
+                except ToManySamples:
+                    tk.messagebox.showwarning(
+                    "Import WAV",
+                    "Cannot use this file:\n{}\nToo many samples.".format(filename)
+                    )
+                    break
+
                 except BaseException as e:
                     tk.messagebox.showwarning(
                     "Import WAV",
@@ -2228,50 +2151,11 @@ class SampleAllEditor(tk.Tk):
                     print(e)
                     continue
 
-                #
-                # Apply forced import options
-                #
-
-                if self.import_opts.force_osc_cat:
-                    esli.OSC_category = e2s.esli_str_to_OSC_cat[self.import_opts.osc_cat]
-
-                if self.import_opts.force_loop_type:
-                    if self.import_opts.loop_type == 0:
-                        # force one shot
-                        esli.OSC_LoopStartPoint_offset = esli.OSC_EndPoint_offset
-                        esli.OSC_OneShot = 1
-                    elif self.import_opts.loop_type == 1:
-                        # force loop all
-                        esli.OSC_LoopStartPoint_offset = 0
-                        esli.OSC_OneShot = 0
-
-                if self.import_opts.force_plus_12_db:
-                    esli.playLevel12dB = self.import_opts.plus_12_db
-
-                #
-                # Register the sample
-                #
-
-                nextsampleIndex = self.sampleList.get_next_free_sample_index(self.import_opts.smp_num_from-1)
-                if nextsampleIndex is not None:
-                    esli.OSC_0index = esli.OSC_0index1 = nextsampleIndex
-                    
-                    self.sampleList.add_new(sample)
-                    if len(self.sampleList.samples) == 1:
-                        self.update_idletasks()
-                        width, height = (self.winfo_reqwidth(), self.winfo_height())
-                        self.minsize(width, height)
-                else:
-                    tk.messagebox.showwarning(
-                    "Import WAV",
-                    "Cannot use this file:\n{}\nToo many samples.".format(filename)
-                    )
-                    break
-            if not all(n_conv == [] for n_conv in converted):
+            if num_converted:
                 tk.messagebox.showinfo(
                     "Import WAV",
-                    ("{} file(s) converted from 8 bits to 16 bits.\n".format(len(converted[0])) if len(converted[0]) else "") +
-                    ("{} file(s) converted from 24 bits to 16 bits.\n".format(len(converted[1])) if len(converted[1]) else "")
+                    ("{} file(s) converted from 8 bits to 16 bits.\n".format(num_converted[8]) if num_converted.get(8) else "") +
+                    ("{} file(s) converted from 24 bits to 16 bits.\n".format(num_converted[24]) if num_converted.get(24) else "")
                     )
 
         wd = WaitDialog(self)
@@ -2300,42 +2184,10 @@ class SampleAllEditor(tk.Tk):
                     )
                 
                 for sample in samplesAll.samples:
-                    esli = sample.get_esli()
-
-                    #
-                    # Apply forced import options
-                    #
-
-                    if self.import_opts.force_osc_cat:
-                        esli.OSC_category = e2s.esli_str_to_OSC_cat[self.import_opts.osc_cat]
-
-                    if self.import_opts.force_loop_type:
-                        if self.import_opts.loop_type == 0:
-                            # force one shot
-                            esli.OSC_LoopStartPoint_offset = esli.OSC_EndPoint_offset
-                            esli.OSC_OneShot = 1
-                        elif self.import_opts.loop_type == 1:
-                            # force loop all
-                            esli.OSC_LoopStartPoint_offset = 0
-                            esli.OSC_OneShot = 0
-
-                    if self.import_opts.force_plus_12_db:
-                        esli.playLevel12dB = self.import_opts.plus_12_db
-
-                    #
-                    # Register the sample
-                    #
-
-                    nextsampleIndex = self.sampleList.get_next_free_sample_index(self.import_opts.smp_num_from-1)
-                    if nextsampleIndex is not None:
-                        esli.OSC_0index = esli.OSC_0index1 = nextsampleIndex
-                        
-                        self.sampleList.add_new(sample)
-                        if len(self.sampleList.samples) == 1:
-                            self.update_idletasks()
-                            width, height = (self.winfo_reqwidth(), self.winfo_reqheight())
-                            self.minsize(width, height)
-                    else:
+                    e2s_sample_import.apply_forced_options(sample, self.import_opts)
+                    try:
+                        self.register_new_sample(sample)
+                    except ToManySamples:
                         tk.messagebox.showwarning(
                         "Import e2sSample.all",
                         "Too many samples."
@@ -2383,6 +2235,21 @@ class SampleAllEditor(tk.Tk):
                                 
             wd = WaitDialog(self)
             wd.run(fct)
+
+    def register_new_sample(self, e2s_sample):
+        esli = e2s_sample.get_esli()
+
+        nextsampleIndex = self.sampleList.get_next_free_sample_index(self.import_opts.smp_num_from-1)
+        if nextsampleIndex is not None:
+            esli.OSC_0index = esli.OSC_0index1 = nextsampleIndex
+
+            self.sampleList.add_new(e2s_sample)
+            if len(self.sampleList.samples) == 1:
+                self.update_idletasks()
+                width, height = (self.winfo_reqwidth(), self.winfo_reqheight())
+                self.minsize(width, height)
+        else:
+            raise ToManySamples
 
     system = platform.system()
 
