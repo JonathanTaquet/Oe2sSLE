@@ -2096,42 +2096,59 @@ class SampleAllEditor(tk.Tk):
                         )
                 wd = WaitDialog(self)
                 wd.run(fct)
-        
-    
+
+    def _import_sample_helper(self, filename):
+        try:
+            return e2s_sample_import.from_wav(filename, self.import_opts)
+
+        except e2s_sample_import.NotWaveFormatPcm:
+            tk.messagebox.showwarning(
+            "Import WAV",
+            "Cannot use this file:\n{}\nWAV format must be WAVE_FORMAT_PCM".format(filename)
+            )
+
+        except e2s_sample_import.EmptyWav:
+            tk.messagebox.showwarning(
+            "Import WAV",
+            "Cannot use this file:\n{}\nNo data: empty samples are not allowed".format(filename)
+            )
+
+        except e2s_sample_import.NotSupportedBitPerSample:
+            tk.messagebox.showwarning(
+            "Import WAV",
+            "Cannot use this file:\n{}\nWAV format must preferably use 16 bits per sample.\n" +
+            "8 bits and old 24 bits per sample are also supported but will be converted to 16 bits.\n"
+            "Convert your file before importing it.".format(filename)
+            )
+
+        except BaseException as e:
+            tk.messagebox.showwarning(
+            "Import WAV",
+            "Cannot use this file:\n{}\n"
+            "The file is probably corrupted or you found a bug.\n"
+            "See log file for details.\n"
+            "Error message:\{}.".format(filename, e)
+            )
+            # also report it in log file
+            print(e)
+
+
     def import_sample(self):
         filenames = tk.filedialog.askopenfilenames(parent=self,title="Select WAV file(s) to import",filetypes=(('Wav Files','*.wav'), ('All Files','*.*')))
         def fct():
             num_converted = dict()
             for filename in filenames:
+                res = self._import_sample_helper(filename)
+
+                if not res:
+                    continue
+
+                sample, converted_from = res
+
+                if converted_from:
+                    num_converted[converted_from] = num_converted.get(converted_from, 0) + 1
                 try:
-                    sample, converted_from = e2s_sample_import.from_wav(filename, self.import_opts)
-                    if converted_from:
-                        num_converted[converted_from] = num_converted.get(converted_from, 0) + 1
                     self.register_new_sample(sample)
-
-                except e2s_sample_import.NotWaveFormatPcm:
-                    tk.messagebox.showwarning(
-                    "Import WAV",
-                    "Cannot use this file:\n{}\nWAV format must be WAVE_FORMAT_PCM".format(filename)
-                    )
-                    continue
-
-                except e2s_sample_import.EmptyWav:
-                    tk.messagebox.showwarning(
-                    "Import WAV",
-                    "Cannot use this file:\n{}\nNo data: empty samples are not allowed".format(filename)
-                    )
-                    continue
-
-                except e2s_sample_import.NotSupportedBitPerSample:
-                    tk.messagebox.showwarning(
-                    "Import WAV",
-                    "Cannot use this file:\n{}\nWAV format must preferably use 16 bits per sample.\n" +
-                    "8 bits and old 24 bits per sample are also supported but will be converted to 16 bits.\n"
-                    "Convert your file before importing it.".format(filename)
-                    )
-                    continue
-
                 except ToManySamples:
                     tk.messagebox.showwarning(
                     "Import WAV",
@@ -2139,17 +2156,6 @@ class SampleAllEditor(tk.Tk):
                     )
                     break
 
-                except BaseException as e:
-                    tk.messagebox.showwarning(
-                    "Import WAV",
-                    "Cannot use this file:\n{}\n"
-                    "The file is probably corrupted or you found a bug.\n"
-                    "See log file for details.\n"
-                    "Error message:\{}.".format(filename, e)
-                    )
-                    # also report it in log file
-                    print(e)
-                    continue
 
             if num_converted:
                 tk.messagebox.showinfo(
