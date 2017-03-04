@@ -1286,6 +1286,7 @@ class Sample(object):
         self.tuneVal_trace = None
 
         self.radioButton = tk.Radiobutton(self.frame, variable=self.master.selectV)
+        self.replaceButton = tk.Button(self.frame, image=GUI.res.replaceIcon, command=self._on_replace)
         self.exportButton = tk.Button(self.frame, image=GUI.res.exportIcon, command=self._on_export)
         self.durationEntry = tk.Label(self.frame, width=8, state=tk.DISABLED, relief=tk.SUNKEN, anchor=tk.E)
         self.entryOscCat = ROCombobox(self.frame, values=Sample.OSC_caths, width=8, command=self._oscCat_set)
@@ -1310,6 +1311,7 @@ class Sample(object):
 
     def grid(self, row):
         self.radioButton.grid(row=row, column=0)
+        self.replaceButton.grid(row=row, column=2)
         self.entryOscNum.grid(row=row, column=3)
         self.entryName.grid(row=row, column=4)
         self.entryOscCat.grid(row=row, column=5)
@@ -1327,6 +1329,7 @@ class Sample(object):
 
     def forget(self):
         self.radioButton.grid_forget()
+        self.replaceButton.grid_forget()
         self.exportButton.grid_forget()
         self.entryOscNum.grid_forget()
         self.entryName.grid_forget()
@@ -1344,6 +1347,7 @@ class Sample(object):
 
     def destroy(self):
         self.radioButton.destroy()
+        self.replaceButton.destroy()
         self.exportButton.destroy()
         self.entryOscNum.destroy()
         self.entryName.destroy()
@@ -1503,6 +1507,30 @@ class Sample(object):
         data = self.e2s_sample.get_data()
         self.smpSize.set(len(data))
         self.master.update_WAVDataSize()
+
+    def _on_replace(self):
+        filename = tk.filedialog.askopenfilename(parent=self.master.parent, title="Select replacement WAV file",filetypes=(('Wav Files','*.wav'), ('All Files','*.*')))
+        def fct():
+            num_converted = dict()
+            res = self.master.parent._import_sample_helper(filename)
+
+            if res:
+                sample, converted_from = res
+                esli = sample.get_esli()
+                esli.OSC_0index = esli.OSC_0index1 = self.e2s_sample.get_esli().OSC_0index
+                self.master.e2s_samples[self.sample_num] = sample
+                self.master.update_sample(self.sample_num)
+                self.master.update_WAVDataSize()
+
+                if converted_from:
+                    tk.messagebox.showinfo(
+                        "Import WAV",
+                        ("'{}' file converted from 8 bits to 16 bits.\n".format(filename) if converted_from == 8 else
+                            "'{}' file converted from 24 bits to 16 bits.\n".format(filename))
+                        )
+        if filename:
+            wd = WaitDialog(self.master.parent)
+            wd.run(fct)
 
     def _on_export(self):
         self.master.export(self.e2s_sample)
