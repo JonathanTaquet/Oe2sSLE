@@ -47,6 +47,7 @@ from GUI.stereo_to_mono import StereoToMonoDialog
 from GUI.wait_dialog import WaitDialog
 from GUI.about_dialog import AboutDialog
 from GUI.import_options import ImportOptionsDialog, ImportOptions
+from GUI.export_options import ExportOptionsDialog, ExportOptions
 from GUI.exchange_sample_dialog import ExchangeSampleDialog
 from GUI.tooltip import ToolTip
 
@@ -1910,7 +1911,7 @@ class SampleList(tk.Frame):
         if filename:
             try:
                 with open(filename, 'wb') as f:
-                    e2s_sample.write(f, export_smpl=True, export_cue=True)
+                    e2s_sample.write(f, export_smpl=self.export_opts.export_smpl, export_cue=self.export_opts.export_cue)
             except Exception as e:
                 tk.messagebox.showwarning(
                 "Export sample as",
@@ -1935,6 +1936,7 @@ class SampleAllEditor(tk.Tk):
         GUI.res.init()
 
         self.import_opts = ImportOptions()
+        self.export_opts = ExportOptions()
 
         # Set the window title
         self.wm_title("Open e2sSample.all Library Editor")
@@ -2012,7 +2014,7 @@ class SampleAllEditor(tk.Tk):
         fr.pack(side=tk.BOTTOM,fill=tk.X)
 
         fr = tk.Frame(self)
-        fr2 = tk.Frame(fr)
+        fr2 = tk.Frame(fr, borderwidth=2)
         self.buttonImport = tk.Button(fr2, text="Import wav Sample(s)", command=self.import_sample)
         self.buttonImport.pack(side=tk.TOP, fill=tk.BOTH)
 
@@ -2021,13 +2023,22 @@ class SampleAllEditor(tk.Tk):
         fr2.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
 
         fr2 = tk.Frame(fr, borderwidth=2)
-        self.buttonImportOptions = tk.Button(fr2, text="Options", width=10, command=self.import_options)
+        self.buttonImportOptions = tk.Button(fr2, text="Import Options", width=15, command=self.import_options)
         self.buttonImportOptions.pack(fill=None,padx=5)
         fr2.pack(side=tk.LEFT, fill=None)
         fr.pack(side=tk.TOP, fill=tk.BOTH)
 
-        self.buttonExpAll = tk.Button(self, text="Export all as wav", command=self.export_all_sample)
+        fr = tk.Frame(self)
+        fr2 = tk.Frame(fr, borderwidth=2)
+        self.buttonExpAll = tk.Button(fr2, text="Export all as wav", command=self.export_all_sample)
         self.buttonExpAll.pack(side=tk.TOP, fill=tk.BOTH)
+        fr2.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
+
+        fr2 = tk.Frame(fr, borderwidth=2)
+        self.buttonExportOptions = tk.Button(fr2, text="Export Options", width=15, command=self.export_options)
+        self.buttonExportOptions.pack(fill=None, padx=5)
+        fr2.pack(side=tk.LEFT, fill=None)
+        fr.pack(side=tk.TOP, fill=tk.BOTH)
 
         self.buttonLoad = tk.Button(self, text="Open", width=10, command=self.load)
         self.buttonLoad.pack(side=tk.LEFT,fill=tk.Y,padx=5,pady=5)
@@ -2072,6 +2083,10 @@ class SampleAllEditor(tk.Tk):
 
     def import_options(self):
         dialog = ImportOptionsDialog(self, self.import_opts)
+        self.wait_window(dialog)
+
+    def export_options(self):
+        dialog = ExportOptionsDialog(self, self.export_opts)
         self.wait_window(dialog)
 
     def load(self):
@@ -2253,7 +2268,7 @@ class SampleAllEditor(tk.Tk):
                         while not ok:
                             try:
                                 with open(filename, 'wb') as f:
-                                    e2s_sample.write(f, export_smpl=True, export_cue=True)
+                                    e2s_sample.write(f, export_smpl=self.export_opts.export_smpl, export_cue=self.export_opts.export_cue)
                             except Exception as e:
                                 tk.messagebox.showwarning(
                                 "Export sample as",
