@@ -1324,9 +1324,9 @@ class Sample(object):
         self.durationEntry.grid(row=row, column=11)
         self.checkStereo.grid(row=row, column=12)
         self.sizeEntry.grid(row=row, column=13)
-        self.buttonEdit.grid(row=row, column=14, padx=10, pady=2)
+        self.buttonEdit.grid(row=row, column=14, padx=10)
         self.exportButton.grid(row=row, column=15, padx=10)
-        self.buttonDelete.grid(row=row, column=15, padx=10, pady=2)
+        self.buttonDelete.grid(row=row, column=16, padx=10)
 
     def forget(self):
         self.radioButton.grid_forget()
