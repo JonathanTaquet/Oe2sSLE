@@ -1304,6 +1304,12 @@ class Sample(object):
         self.buttonEdit = tk.Button(self.frame, image=GUI.res.editIcon, command=self._on_edit)
         self.buttonDelete = tk.Button(self.frame, image=GUI.res.trashIcon, command=self._on_delete)
 
+        ToolTip(self.replaceButton, follow_mouse=1, text="import replacement sample")
+        ToolTip(self.exportButton, follow_mouse=1, text="export sample")
+        ToolTip(self.buttonPlay, follow_mouse=1, text="play full WAV content\n(start/loop/end are ignored)")
+        ToolTip(self.buttonEdit, follow_mouse=1, text="edit loop/slices points")
+        ToolTip(self.buttonDelete, follow_mouse=1, text="delete")
+
         self.restore(line_num, sample_num)
 
     def restore(self, line_num, sample_num):
@@ -1558,13 +1564,16 @@ class SampleList(tk.Frame):
 
         self.parent = parent
 
+        self.stopButton = tk.Button(self.frame, image=GUI.res.stop_smallIcon, command=self.play_stop)
+        ToolTip(self.stopButton, follow_mouse=1, text="stop playback")
+
         tk.Label(self.frame, text="#Num").grid(row=0, column=3)
         tk.Label(self.frame, text="Name").grid(row=0, column=4)
         tk.Label(self.frame, text="Cat.").grid(row=0, column=5)
         tk.Label(self.frame, text="1-shot").grid(row=0, column=6)
         tk.Label(self.frame, text="+12dB").grid(row=0, column=7)
         tk.Label(self.frame, text="Tune").grid(row=0, column=8)
-        tk.Button(self.frame, image=GUI.res.stop_smallIcon, command=self.play_stop).grid(row=0, column=9, padx=5)
+        self.stopButton.grid(row=0, column=9, padx=5)
         tk.Label(self.frame, text="Freq (Hz)").grid(row=0, column=10)
         tk.Label(self.frame, text="Time (s)").grid(row=0, column=11)
         tk.Label(self.frame, text="Stereo").grid(row=0,column=12)
@@ -2005,6 +2014,7 @@ class SampleAllEditor(tk.Tk):
         tk.Label(fr,text='Total Data Size : ').pack(side=tk.RIGHT)
 
         self.buttonDonate = tk.Button(fr, command=self.donate, image=GUI.res.pledgieIcon)
+        ToolTip(self.buttonDonate, follow_mouse=1, text="what about\noffering me a beer?")
         self.buttonDonate.pack(side=tk.LEFT)
 
         self.buttonAbout=tk.Button(fr, text="About", width=10, command=self.about)
