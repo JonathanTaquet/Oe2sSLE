@@ -7,7 +7,7 @@ anchor :        where the text should be positioned inside the widget, must be o
 bd :            borderwidth of the widget; default is 1 (NOTE: don't use "borderwidth" here)
 bg :            background color to use for the widget; default is "lightyellow" (NOTE: don't use "background")
 delay :         time in ms that it takes for the widget to appear on the screen when the mouse pointer has
-                entered the parent widget; default is 1500
+                entered the parent widget; default is 500
 fg :            foreground (i.e. text) color to use; default is "black" (NOTE: don't use "foreground")
 follow_mouse :  if set to 1 the tooltip will follow the mouse pointer instead of being displayed
                 outside of the parent widget; this may be useful if you want to use tooltips for
@@ -40,7 +40,7 @@ create_contents() : creates the contents of the tooltip window (by default a Tki
 import tkinter
 
 class ToolTip:
-    def __init__(self, master, text='Your text here', delay=1500, **opts):
+    def __init__(self, master, text='Your text here', delay=500, **opts):
         self.master = master
         self._opts = {'anchor':'center', 'bd':1, 'bg':'lightyellow', 'delay':delay, 'fg':'black',\
                       'follow_mouse':0, 'font':None, 'justify':'left', 'padx':4, 'pady':2,\
