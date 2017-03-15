@@ -22,6 +22,17 @@ description of the Issue.
 The log file should be located in `~/.Oe2sSLE/Oe2sSLE.log` (`<your drive letter>:\\Users\\<your username>\\.Oe2sSLE\\Oe2sSLE.log` on windows).
 
 
+For Mac OS X Users
+---
+
+If you want to run the application directly from the source, there are know issues when you use tkinter (Tcl/Tk python wrapper) for GUI development on Mac OS X.
+If you follow the next steps, it should work:
+- First you will need to install a Tcl/Tk distribution that is more recent than the one provided in Mac OS. It is recommended to install ActiveTcl 8.5.18.0 from [Active State web site](http://www.activestate.com/activetcl/downloads).
+- Then it is recommended to install the official python 3.5.3 distribution from [python web site](https://www.python.org/downloads/mac-osx/).
+
+For more details on the issue, see [this page](https://www.python.org/download/mac/tcltk/).
+
+
 Some screenshots:
 ---
 
