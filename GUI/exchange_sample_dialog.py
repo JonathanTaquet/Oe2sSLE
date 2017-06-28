@@ -69,6 +69,9 @@ class ExchangeSampleDialog(tk.Toplevel):
         self.geometry("+{}+{}".format(int(x), int(y)))
         self.deiconify()
 
+        self.focus_set()
+        self.grab_set()
+
     #
     # standard button semantics
 
