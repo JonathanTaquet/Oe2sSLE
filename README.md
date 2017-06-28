@@ -155,7 +155,7 @@ On the left side of the sample list there are 'radio' buttons that allow you to 
 
 ##### 1.7.1 Exchange with another
 
-You can exchange the selected sample with another one, using the 'exchange with another' ![exchange sample icon](images/play.gif?raw=true "exchange with another") button.
+You can exchange the selected sample with another one, using the 'exchange with another' ![exchange sample icon](images/exchange.gif?raw=true "exchange with another") button.
 You will be asked to select the sample with which you want to exchange the selected one.
 
 ##### 1.7.2 Swap up/down
