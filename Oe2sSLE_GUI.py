@@ -1770,7 +1770,7 @@ class SampleList(tk.Frame):
         _, _, _, h = self.frame.grid_bbox(0,0,0,0)
         h_max = self.canvas.winfo_height()-h
         _, _, _, h_line = self.frame.grid_bbox(0,1,0,1)
-        if not n_lines or h_line*(n_lines+1) <= h_max:
+        if not n_lines or h_line*(n_lines+1) <= h_max and len(self.samples) < len(self.e2s_samples):
             self.push_sample(len(self.e2s_samples)-1)
         # update selected sample
         if len(self.e2s_samples) > 1 and self.selectV.get() >= smp_num:
