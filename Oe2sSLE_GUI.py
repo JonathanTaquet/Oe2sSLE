@@ -1920,7 +1920,7 @@ class SampleList(tk.Frame):
         if filename:
             try:
                 with open(filename, 'wb') as f:
-                    e2s_sample.write(f, export_smpl=self.export_opts.export_smpl, export_cue=self.export_opts.export_cue)
+                    e2s_sample.write(f, export_smpl=self.parent.export_opts.export_smpl, export_cue=self.parent.export_opts.export_cue)
             except Exception as e:
                 tk.messagebox.showwarning(
                 "Export sample as",
