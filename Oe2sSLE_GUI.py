@@ -2331,9 +2331,9 @@ class SampleAllEditor(tk.Tk):
             self.bind_class('TCombobox', '<MouseWheel>', lambda e: None)
         else:
             def _on_up(event):
-                self.sampleList.scroll(-1, "units")
+                self.sampleList.scroll(-1)
             def _on_down(event):
-                self.sampleList.scroll(1, "units")
+                self.sampleList.scroll(1)
             self.bind('<Button-4>', _on_up)
             self.bind('<Button-5>', _on_down)
             #self.bind_class('TCombobox', '<Button-4>', lambda e: "break", "+")
