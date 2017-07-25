@@ -89,7 +89,6 @@ class StereoToMonoDialog(tk.Toplevel):
 
 #        self.waitBar.focus_set()
         self.mix_scale.focus_set()
-        self.grab_set()
 
         # temporarily hide the window
         self.withdraw()
@@ -101,6 +100,7 @@ class StereoToMonoDialog(tk.Toplevel):
         x, y = (px+pwidth/2-width/2, py+pheight/2-height/2)
         self.geometry("+{}+{}".format(int(x), int(y)))
         self.deiconify()
+        self.grab_set()
 
     def update_data(self):
         num_chans = self.e2s_sample.get_fmt().channels
