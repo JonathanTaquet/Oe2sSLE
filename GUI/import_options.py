@@ -72,6 +72,11 @@ class ImportOptionsDialog(tk.Toplevel):
         self.smp_num_from = tk.IntVar()
         self.smp_num_from.set(options.smp_num_from)
 
+        self.force_mono = tk.IntVar()
+        self.force_mono.set(options.force_mono)
+        self.mono_mix = tk.DoubleVar()
+        self.mono_mix.set(options.mono_mix)
+
         fr = tk.Frame(self)
 
         tk.Label(fr, text="OSC Cat.").grid(row=0, column=1)
@@ -127,6 +132,26 @@ class ImportOptionsDialog(tk.Toplevel):
 
         fr.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
+        fr = tk.Frame(self)
+
+        tk.Label(fr, text="Force mono : ").pack(side=tk.LEFT)
+        tk.Checkbutton(
+                fr,
+                variable=self.force_mono
+            ).pack(side=tk.LEFT)
+        tk.Label(fr, text=" L").pack(side=tk.LEFT)
+        tk.Scale(
+                fr,
+                variable=self.mono_mix,
+                orient=tk.HORIZONTAL,
+                from_=-1,
+                to=1,
+                resolution=0.001
+            ).pack(fill=tk.X, side=tk.LEFT, expand=True)
+        tk.Label(fr, text="R").pack(side=tk.LEFT)
+
+        fr.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+
         box = tk.Frame(self)
 
         tk.Button(
@@ -170,6 +195,8 @@ class ImportOptionsDialog(tk.Toplevel):
         self.options.force_loop_type = self.force_loop_type.get()
         self.options.force_plus_12_db = self.force_plus_12_db.get()
         self.options.smp_num_from = self.smp_num_from.get()
+        self.options.force_mono = self.force_mono.get()
+        self.options.mono_mix = self.mono_mix.get()
 
     #
     # standard button semantics

@@ -1522,18 +1522,21 @@ class Sample(object):
             res = self.master.parent._import_sample_helper(filename)
 
             if res:
-                sample, converted_from = res
+                sample, converted_from, converted_to_mono = res
                 esli = sample.get_esli()
                 esli.OSC_0index = esli.OSC_0index1 = self.e2s_sample.get_esli().OSC_0index
                 self.master.e2s_samples[self.sample_num] = sample
                 self.master.update_sample(self.sample_num)
                 self.master.update_WAVDataSize()
 
-                if converted_from:
+                if converted_from or converted_to_mono:
+                    conversion = (
+                        ["from {} bits to 16 bits".format(converted_from)] if converted_from else []
+                        + ["to mono"] if converted_to_mono else []
+                        )
                     tk.messagebox.showinfo(
                         "Import WAV",
-                        ("'{}' file converted from 8 bits to 16 bits.\n".format(filename) if converted_from == 8 else
-                            "'{}' file converted from 24 bits to 16 bits.\n".format(filename))
+                        "'{}' file converted {}.\n".format(filename, " and ".join(conversion))
                         )
         if filename:
             wd = WaitDialog(self.master.parent)
@@ -2196,10 +2199,12 @@ class SampleAllEditor(tk.Tk):
                 if not res:
                     continue
 
-                sample, converted_from = res
+                sample, converted_from, converted_to_mono = res
 
                 if converted_from:
                     num_converted[converted_from] = num_converted.get(converted_from, 0) + 1
+                if converted_to_mono:
+                    num_converted['mono'] = num_converted.get('mono', 0) + 1
                 try:
                     self.register_new_sample(sample)
                 except ToManySamples:
@@ -2213,6 +2218,7 @@ class SampleAllEditor(tk.Tk):
             if num_converted:
                 tk.messagebox.showinfo(
                     "Import WAV",
+                    ("{} file(s) converted to mono.\n".format(num_converted['mono']) if num_converted.get('mono') else "") +
                     ("{} file(s) converted from 8 bits to 16 bits.\n".format(num_converted[8]) if num_converted.get(8) else "") +
                     ("{} file(s) converted from 24 bits to 16 bits.\n".format(num_converted[24]) if num_converted.get(24) else "")
                     )

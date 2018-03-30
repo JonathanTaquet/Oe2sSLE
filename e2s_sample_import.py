@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with Oe2sSLE.  If not, see <http://www.gnu.org/licenses/>
 """
 
+import copy
 import math
 import os
 
@@ -46,6 +47,11 @@ class ImportOptions:
         # A free sample number will be searched from smp_num_from value
         # when a new sample will be imported
         self.smp_num_from = 19
+        # force to import stereo samples as mono
+        self.force_mono = 0
+        # the mix value used when samples are converted to mono
+        # (-1.0: Left, 0.0: Center, 1.0: Right)
+        self.mono_mix = 0.0
 
 
 class FromWavError(Exception):
@@ -170,11 +176,12 @@ def from_wav(filename, import_opts=ImportOptions()):
     else:
         esli = esli_chunk.data
 
-    apply_forced_options(sample, import_opts)
-    return sample, converted_from
+    converted_to_mono = apply_forced_options(sample, import_opts)
+    return sample, converted_from, converted_to_mono
 
 
 def apply_forced_options(e2s_sample, import_opts):
+    converted_to_mono = False
     esli = e2s_sample.get_esli()
 
     if import_opts.force_osc_cat:
@@ -192,3 +199,32 @@ def apply_forced_options(e2s_sample, import_opts):
 
     if import_opts.force_plus_12_db:
         esli.playLevel12dB = import_opts.plus_12_db
+
+    if import_opts.force_mono:
+        converted_to_mono = _convert_to_mono(e2s_sample, import_opts.mono_mix)
+
+    return converted_to_mono
+
+def _convert_to_mono(e2s_sample, mix):
+    converted = False
+    num_chans = e2s_sample.get_fmt().channels
+    if num_chans > 1:
+        converted = True
+        _esli = e2s.RIFF_korg_esli()
+        _esli.rawdata[:] = e2s_sample.get_esli().rawdata[:]
+        prev_fmt = e2s_sample.get_fmt()
+        _fmt = copy.deepcopy(prev_fmt)
+        _fmt.channels=1
+        _fmt.avgBytesPerSec = _fmt.avgBytesPerSec // prev_fmt.channels
+        _fmt.blockAlign = _fmt.blockAlign // prev_fmt.channels
+        _esli.OSC_StartPoint_address = _esli.OSC_StartPoint_address // prev_fmt.channels
+        _esli.OSC_LoopStartPoint_offset = _esli.OSC_LoopStartPoint_offset // prev_fmt.channels
+        _esli.OSC_EndPoint_offset = _esli.OSC_EndPoint_offset // prev_fmt.channels
+        _esli.WAV_dataSize = _esli.WAV_dataSize // prev_fmt.channels
+        _esli.useChan1 = False
+        w = ((1 - mix)/2, 1 - (1 - mix)/2) + (0,)*(num_chans-2)
+        _data = wav_tools.wav_mchan_to_mono(e2s_sample.get_data().rawdata, w)
+        e2s_sample.get_esli().rawdata = _esli.rawdata
+        e2s_sample.get_fmt().__dict__ = _fmt.__dict__
+        e2s_sample.get_data().rawdata = _data
+    return converted
