@@ -1736,7 +1736,7 @@ class SampleList(tk.Frame):
             if what == "units":
                 self.scroll(step)
             elif what == "pages":
-                self.scroll(step*len(samples))
+                self.scroll(step*len(self.samples))
             else:
                 raise Exception("Unknown scroll unit: " + what)
 
