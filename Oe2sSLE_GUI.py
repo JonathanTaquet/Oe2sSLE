@@ -499,7 +499,7 @@ class MaxValueEntry(tk.Entry):
         if var:
             if self.MVEvar:
                 self.MVEvar.trace_vdelete('w', self.MVEvar_trace)
-            self.MVEvar=MVEvar
+            self.MVEvar=var
         super().config(*arg, **kwarg)
         if var:
             self.MVEvar_trace = self.MVEvar.trace('w', self._var_set)
