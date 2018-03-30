@@ -53,7 +53,20 @@ class WaitDialog(tk.Toplevel):
         else:
             self._run_thread(task,*args, **kwargs)
 
+    def run_max(self, task, max, *args, **kwargs):
+        self.waitBar.configure(mode='determinate', maximum=max)
+        if not version.debug:
+            thr=threading.Thread(target=self._run_thread_max,args=(task,)+args,kwargs=kwargs)
+            thr.start()
+            self.wait_window(self)
+        else:
+            self._run_thread_max(task, *args, **kwargs)
+
     def _run_thread(self, task, *args, **kwargs):
+        task(*args,**kwargs)
+        self.destroy()
+
+    def _run_thread_max(self, task, *args, **kwargs):
         task(*args,**kwargs)
         self.destroy()
 
