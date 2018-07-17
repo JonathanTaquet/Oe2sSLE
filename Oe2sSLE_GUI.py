@@ -2016,9 +2016,12 @@ class SampleAllEditor(tk.Tk):
         self.sizeEntry.pack(side=tk.RIGHT)
         tk.Label(fr,text='Total Data Size : ').pack(side=tk.RIGHT)
 
-        self.buttonDonate = tk.Button(fr, command=self.donate, image=GUI.res.pledgieIcon)
-        ToolTip(self.buttonDonate, follow_mouse=1, text="what about\noffering me a beer?")
-        self.buttonDonate.pack(side=tk.LEFT)
+        self.buttonDonateEur = tk.Button(fr, command=self.donate_eur, image=GUI.res.donateEurIcon)
+        ToolTip(self.buttonDonateEur, follow_mouse=1, text="what about\noffering me a beer with € ?")
+        self.buttonDonateEur.pack(side=tk.LEFT)
+        self.buttonDonateUsd = tk.Button(fr, command=self.donate_usd, image=GUI.res.donateUsdIcon)
+        ToolTip(self.buttonDonateUsd, follow_mouse=1, text="what about\noffering me a beer with $ ?")
+        self.buttonDonateUsd.pack(side=tk.LEFT)
 
         self.buttonAbout=tk.Button(fr, text="About", width=10, command=self.about)
         tk.Frame(fr).pack(side=tk.TOP,fill=tk.Y,expand=1)
@@ -2084,9 +2087,12 @@ class SampleAllEditor(tk.Tk):
                 sl.exchange(selected, dialog.result)
                 sl.set_selected(dialog.result)
 
-    def donate(self):
-        webbrowser.open('https://pledgie.com/campaigns/30817')
+    def donate_eur(self):
+        webbrowser.open('https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=L6BSNDEHYQ2HE')
     
+    def donate_usd(self):
+        webbrowser.open('https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=PG6YDQS4EZAE2')
+
     def about(self):
         about = AboutDialog(self)
 

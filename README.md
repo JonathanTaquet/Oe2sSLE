@@ -304,13 +304,7 @@ Using `About` button you will see copyright notice as well as software version a
 ### 5 To offer me a beer
 
 If you find the software useful, consider making a donation (any amount will be appreciated).
-This can be done by using the 'donate' [![donate icon](images/pledgie-small.gif?raw=true "what about offering me a beer?")](https://pledgie.com/campaigns/30817) button in the application.
+This can be done by using the 'donate' buttons [![donate € with paypal](images/donate-eur.gif?raw=true)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=L6BSNDEHYQ2HE) or [![donate $ with paypal](images/donate-usd.gif?raw=true)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=PG6YDQS4EZAE2) in the application.
 
 You can also directly click on the above image ;)
-
-This is a [pledgie](https://pledgie.com) donation. 3% of the donation will go to pledgie and then paypal fees will be taken from the reminder.
-If you don't want to support pledgie and paypal, and if you prefer, you can directly make a bitcoin donation to the following address:
-362PTqA6fRSwfP2tcUEGVQBttH5EBBdGh5
-
-![donate bitcoin icon](doc/images/qr.png?raw=true "offering a beer with bitcoin")
 

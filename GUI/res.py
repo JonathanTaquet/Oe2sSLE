@@ -38,7 +38,8 @@ trashIcon=None
 playIcon=None
 stopIcon=None
 stop_smallIcon=None
-pledgieIcon=None
+donateEurIcon=None
+donateUsdIcon=None
 
 # for pyIntaller bundled executable
 def resource_path(relative_path):
@@ -67,7 +68,8 @@ def init():
     global playIcon
     global stopIcon
     global stop_smallIcon
-    global pledgieIcon
+    global donateEurIcon
+    global donateUsdIcon
 
     exchangeIcon=tk.PhotoImage(file=resource_path("images/exchange.gif"))
     swap_nextIcon=tk.PhotoImage(file=resource_path("images/swap-next.gif"))
@@ -86,4 +88,5 @@ def init():
     playIcon=tk.PhotoImage(file=resource_path("images/play.gif"))
     stopIcon=tk.PhotoImage(file=resource_path("images/stop.gif"))
     stop_smallIcon=tk.PhotoImage(file=resource_path("images/stop-small.gif"))
-    pledgieIcon=tk.PhotoImage(file=resource_path("images/pledgie-small.gif"))
+    donateEurIcon=tk.PhotoImage(file=resource_path("images/donate-eur.gif"))
+    donateUsdIcon=tk.PhotoImage(file=resource_path("images/donate-usd.gif"))
