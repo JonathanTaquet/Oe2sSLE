@@ -4,8 +4,8 @@ This is an editor for electribe sampler (e2s) sample library.
 It allows library management and supports sample loops and slices editing.
 You can also remove or replace factory samples with your own.
 
-This code was developped for python 3.5, but shall be compatible with python 3.4.
-Graphical user interface is using tkinter to reduce external dependencies. The only requierement is
+This code was developed for python 3.5, but shall be compatible with python 3.4.
+Graphical user interface is using tkinter to reduce external dependencies. The only requirement is
 [pyaudio](https://people.csail.mit.edu/hubert/pyaudio/) for audio sample listening (tested with pyaudio v0.2.9):
 
 `pip install pyaudio`
@@ -116,6 +116,8 @@ This default values are used when an imported sample does not contain this infor
 You can also force to use these values for any imported sample by checking the associated check-boxes `Force to reset`.
 
 The `Import options` dialog window also allow to choose with `From #Num` from which number a free sample number will be looked for when importing a sample.
+
+When the `Force mono` checkbox is activated, any imported stereo sample will be automatically converted to mono, using the pan mixing configuration specified by the scroll bar on the right of that checkbox.
 
 ##### 1.4.5 Check that your sample library is not exceeding the electribe sampler memory limit.
 
