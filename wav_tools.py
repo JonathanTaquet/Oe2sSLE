@@ -122,14 +122,29 @@ def wav_resample_preview(rawdata, fmt, min_smpl_per_sec, max_smpl_per_sec):
         data.byteswap()
     return (data.tobytes(), res_fmt)
 
-def wav_mchan_to_mono(mc_data, w):
-    c = len(w)
+def wav_mchan_to_mono(wav, w, cb=None, step=None):
     ws = sum( (abs(x) for x in w) )
     w = tuple( (x/ws for x in w) )
-    data = array.array('h',mc_data)
+    if cb is None:
+        return [[int(sum([xc*wc for xc, wc in zip(x, w)])) for x in zip(*(wav))]]
+    else:
+        nc = len(wav)
+        l = len(wav[0])
+        res = [0 for _ in range(l)]
+        for t0 in range(0, l, step):
+            t1=min(t0+step, l)
+            res[t0:t1] = [int(sum([xc*wc for xc, wc in zip(x, w)])) for x in zip(*[wav[c][t0:t1] for c in range(nc)])]
+            cb(t1-t0)
+        return [res]
+
+def wav_from_raw16b(data, n_chan):
+    data = array.array('h', data)
     if sys.byteorder == 'big':
         data.byteswap()
-    data =array.array('h',[int(sum([x[i]*w[i] for i in range(c)])) for x in zip( *(data[i::c] for i in range(c)))])
+    return [list(data[chan::n_chan]) for chan in range(n_chan)]
+
+def raw16b_from_wav(wav):
+    data = array.array('h',[x for m_x in zip(*wav) for x in m_x])
     if sys.byteorder == 'big':
         data.byteswap()
     return data.tobytes()

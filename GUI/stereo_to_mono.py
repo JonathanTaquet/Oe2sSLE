@@ -105,18 +105,25 @@ class StereoToMonoDialog(tk.Toplevel):
     def update_data(self):
         num_chans = self.e2s_sample.get_fmt().channels
         if num_chans == 1:
-            self.data=self.e2s_sample.get_data().rawdata
+            if self.data is None:
+                self.data=self.e2s_sample.get_data().rawdata
         else:
             mix = self.mix_var.get()
             w = ((1 - mix)/2, 1 - (1 - mix)/2) + (0,)*(num_chans-2)
             if self.w != (w):
                 self.w=w
+                wav = wav_tools.wav_from_raw16b(self.e2s_sample.get_data().rawdata, num_chans)
+                n_smpl = len(wav[0])
                 def action():
-                    self.data=wav_tools.wav_mchan_to_mono(self.e2s_sample.get_data().rawdata, self.w)
+                    def cb(step):
+                        wd.waitBar.step(step)
+                    step = 4096
+                    self.data=wav_tools.raw16b_from_wav(wav_tools.wav_mchan_to_mono(wav, self.w, cb, step))
                 wd = WaitDialog(self.parent)
-                wd.run(action)
+                wd.run_max(action, n_smpl)
 
     def play(self):
+        self.stop()
         self.update_data()
         audio.player.play_start(audio.LoopWaveSource(self.data,self.fmt,self.esli))
 
