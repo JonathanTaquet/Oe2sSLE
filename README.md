@@ -4,9 +4,9 @@ This is an editor for electribe sampler (e2s) sample library.
 It allows library management and supports sample loops and slices editing.
 You can also remove or replace factory samples with your own.
 
-This code was developed for python 3.5, but shall be compatible with python 3.4.
+This code was developed for python 3.6, but shall be compatible with python 3.5 and 3.4.
 Graphical user interface is using tkinter to reduce external dependencies. The only requirement is
-[pyaudio](https://people.csail.mit.edu/hubert/pyaudio/) for audio sample listening (tested with pyaudio v0.2.9):
+[pyaudio](https://people.csail.mit.edu/hubert/pyaudio/) for audio sample listening (tested with pyaudio v0.2.11):
 
 `pip install pyaudio`
 
