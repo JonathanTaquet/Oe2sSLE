@@ -419,8 +419,8 @@ class WaveDisplay(tk.Canvas):
                             mid = lineSet.loop_first.get()
                         else:
                             mid = lineSet.attack_last.get()
-                        amp = lineSet.amplitude.get()
-                        if amp is not None:
+                        if lineSet.amplitude is not None:
+                            amp = lineSet.amplitude.get()
                             start_x = max(0, math.floor((first+0.25 - fr)*w/(to - fr)))
                             end_x = min(w-1, math.ceil((last+0.75 - fr)*w/(to - fr)))
 
