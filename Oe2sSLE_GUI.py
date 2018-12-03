@@ -933,14 +933,8 @@ class NormalSampleOptions(tk.LabelFrame):
         self.esli.OSC_LoopStartPoint_offset = (self.loopStart.get()-start)*self.blockAlign
         self.esli.OSC_EndPoint_offset = (self.stop.get()-start)*self.blockAlign
         # update slices
-        for sliceNum in range(64):
-            slice = self.esli.slices[sliceNum]
-            if slice.length:
-                slice.start += (prev_OSC_StartPoint_address - self.esli.OSC_StartPoint_address)//self.blockAlign
-            else:
-                # update interface to make slice starts at new startpoint (i.e. keep offset = 0)
-                self.editor.slicedSampleOptions.frameSlices.slices[sliceNum].start.set(start)
-                self.editor.slicedSampleOptions.frameSlices.slices[sliceNum].stop.set(start-1)
+        for slice in self.esli.slices:
+            slice.start += (prev_OSC_StartPoint_address - self.esli.OSC_StartPoint_address)//self.blockAlign
 
         self.editor.wavDisplay.set_activeLineSet(self.lineSet)
         self.editor.wavDisplay.refresh(True)
