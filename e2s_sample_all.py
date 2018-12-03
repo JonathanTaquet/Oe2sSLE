@@ -387,17 +387,17 @@ class e2s_sample:
 
         if export_cue:
             num_samples = len(sample.get_data()) // fmt.blockAlign
+            start_sample = esli.OSC_StartPoint_address // fmt.blockAlign
             slices = []
             for slice in esli.slices:
                 if not slice.length:
+                    continue
+                if slice.start >= num_samples:
                     continue
                 # remove duplicates
                 skip = False
                 for other in slices:
                     if slice.start == other.start:
-                        skip = True
-                        break
-                    if slice.start >= num_samples:
                         skip = True
                         break
                 if skip:
@@ -408,11 +408,11 @@ class e2s_sample:
                 for slice in slices:
                     cue_point = cue.add_cue_point()
                     cue_point.identifier = uid
-                    cue_point.position = slice.start
+                    cue_point.position = slice.start + start_sample
                     cue_point.fccChunk = b'data'
                     #cue_point.chunkStart = 0
                     #cue_point.blockStart = 0
-                    cue_point.sampleOffset = slice.start
+                    cue_point.sampleOffset = slice.start + start_sample
                     uid += 1
                 cue_chunk = RIFF.Chunk(header=RIFF.ChunkHeader(id=b'cue '),data=cue)
                 sample.RIFF.chunkList.chunks.append(cue_chunk)

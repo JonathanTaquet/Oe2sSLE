@@ -160,13 +160,14 @@ def from_wav(filename, import_opts=ImportOptions()):
             num_cue_points = cue_chunk.data.numCuePoints
             num_slices = 0
             num_samples = len(data) // fmt.blockAlign
+            start_sample = esli.OSC_StartPoint_address // fmt.blockAlign
             for cue_point_num in range(num_cue_points):
                 cue_point = cue_chunk.data.cuePoints[cue_point_num]
                 if cue_point.fccChunk != b'data' or cue_point.sampleOffset >= num_samples:
                     # unhandled cue_point
                     continue
                 else:
-                    esli.slices[num_slices].start = cue_point.sampleOffset
+                    esli.slices[num_slices].start = cue_point.sampleOffset - start_sample
                     esli.slices[num_slices].length = num_samples - cue_point.sampleOffset
                     if num_slices > 0:
                         esli.slices[num_slices-1].length = esli.slices[num_slices].start - esli.slices[num_slices-1].start
