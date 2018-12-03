@@ -157,23 +157,27 @@ def from_wav(filename, import_opts=ImportOptions()):
         # check if cue chunk is used
         cue_chunk = sample.RIFF.chunkList.get_chunk(b'cue ')
         if cue_chunk:
-            num_cue_points = cue_chunk.data.numCuePoints
-            num_slices = 0
             num_samples = len(data) // fmt.blockAlign
-            start_sample = esli.OSC_StartPoint_address // fmt.blockAlign
-            for cue_point_num in range(num_cue_points):
-                cue_point = cue_chunk.data.cuePoints[cue_point_num]
+            cue_points = []
+            for cue_point in cue_chunk.data.cuePoints:
                 if cue_point.fccChunk != b'data' or cue_point.sampleOffset >= num_samples:
                     # unhandled cue_point
                     continue
+                else:
+                    cue_points.append(cue_point)
+            start_sample = esli.OSC_StartPoint_address // fmt.blockAlign
+            num_slices = 0
+            cue_points.sort(key=lambda cue_point: cue_point.sampleOffset)
+            for cue_point in cue_points:
+                if num_slices >= 64:
+                    break
                 else:
                     esli.slices[num_slices].start = cue_point.sampleOffset - start_sample
                     esli.slices[num_slices].length = num_samples - cue_point.sampleOffset
                     if num_slices > 0:
                         esli.slices[num_slices-1].length = esli.slices[num_slices].start - esli.slices[num_slices-1].start
                     num_slices += 1
-                    if num_slices >= 64:
-                        break
+
     else:
         esli = esli_chunk.data
 
