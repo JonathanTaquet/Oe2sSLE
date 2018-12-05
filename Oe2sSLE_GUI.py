@@ -459,6 +459,8 @@ class WaveDisplay(tk.Canvas):
                                 
                         if fr <= first <= to:
                             x = math.floor((first+0.25 - fr)*w/(to - fr))
+                            if x >= w:
+                                x = w-1
                             # some green and red
                             if active:
                                 ppm[head_l+x*3+0:head_l+x*3+wstep*h+0:wstep] = (255,)*h
