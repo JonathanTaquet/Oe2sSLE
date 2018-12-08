@@ -629,6 +629,8 @@ class Slice:
         self.entryAttack = SampleNumSpinbox(self.master, width=10, from_=-1, textvariable=self.attack, state='readonly')
         self.entryAmplitude = SampleNumSpinbox(self.master, width=10, from_=0, textvariable=self.amplitude, state='readonly')
         self.buttonPlay = tk.Button(self.master, image=GUI.res.playIcon, command=self._play)
+
+        ToolTip(self.buttonPlay, follow_mouse=1, text="play slice")
         
         self._selected=False
         self.entryStart.bind("<FocusIn>",self._focus_in,add="+")
@@ -832,6 +834,8 @@ class NormalSampleOptions(tk.LabelFrame):
         self.buttonTrim = tk.Button(self, image=GUI.res.trimIcon, command=self.trim)
         self.buttonTrim.grid(row=2, column=7, padx=10, pady=2)
 
+        ToolTip(self.buttonPlay, follow_mouse=1, text="play from Start to End\nand loop if not 1-shot")
+        ToolTip(self.buttonStop, follow_mouse=1, text="stop playback")
         ToolTip(self.buttonTrim, follow_mouse=1, text="trim sample:\ndelete everything before 'Start' and after 'End' points")
 
         self._selected=False
