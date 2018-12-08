@@ -1015,9 +1015,9 @@ class SlicedSampleOptions(tk.LabelFrame):
     def set_sample(self, fmt, data, esli):
         self.frameSlices.set_sample(fmt,data,esli)
 
-class SliceEditor(tk.Frame):
+class SliceEditor(tk.PanedWindow):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, orient='vertical', **kwargs)
 
         self.esli=None
 
@@ -1025,28 +1025,31 @@ class SliceEditor(tk.Frame):
         canvas_width = 640
         canvas_height = 240
 
-        self.wavDisplay = WaveDisplay(self, width=canvas_width, height=canvas_height)
+        self.frameWave = frameWave = tk.Frame(self)
+        self.wavDisplay = WaveDisplay(frameWave, width=canvas_width, height=canvas_height)
         self.wavDisplay.pack(fill=tk.BOTH, expand=tk.YES, padx=2)
-        self.h_scroll = tk.Scrollbar(self, orient=tk.HORIZONTAL, command=self.scroll_wav)
+        self.h_scroll = tk.Scrollbar(frameWave, orient=tk.HORIZONTAL, command=self.scroll_wav)
         self.h_scroll.pack(fill=tk.X, expand=tk.NO, padx=2)
         self.wavDisplay.set_scrollBar(self.h_scroll)
 
-        framezoom = tk.Frame(self)
+        framezoom = tk.Frame(frameWave)
         framezoom.pack(fill=tk.X, expand=tk.NO)
         tk.Label(framezoom,text="Zoom:").pack(side=tk.LEFT)
         self.zoomVar=tk.StringVar()
         self.zoomVar.trace("w",self._zoom_edit)
         self.zoomEdit = ROSpinbox(framezoom, values=('all',), textvariable=self.zoomVar)
         self.zoomEdit.pack(side=tk.LEFT)
+        frameWave.update_idletasks()
+        self.add(frameWave, minsize=frameWave.winfo_reqheight())
         
         self.frame = VerticalScrolledFrame(self)
-        self.frame.pack(fill=tk.BOTH, expand=tk.YES)
+        self.add(self.frame)
 
         self.normalSampleOptions = NormalSampleOptions(self.frame.interior, self, text="Normal sample options")
-        self.normalSampleOptions.pack(side=tk.TOP, fill=tk.BOTH, expand=tk.NO)
+        self.normalSampleOptions.pack(side=tk.TOP, fill=tk.BOTH, expand=tk.YES)
 
         self.slicedSampleOptions = SlicedSampleOptions(self.frame.interior, self, text="Sliced sample options")
-        self.slicedSampleOptions.pack(side=tk.TOP, fill=tk.BOTH, expand=tk.NO)
+        self.slicedSampleOptions.pack(side=tk.TOP, fill=tk.BOTH, expand=tk.YES)
 
         frame = tk.Frame(self.frame.interior)
         frame.pack()
@@ -1227,6 +1230,10 @@ class SliceEditorDialog(tk.Toplevel):
         self.sliceEditor = SliceEditor(self)
         self.sliceEditor.pack(fill=tk.BOTH, expand=tk.YES)
 
+        self.sliceEditor.update_idletasks()
+        width, height = (self.sliceEditor.winfo_reqwidth(), self.sliceEditor.winfo_reqheight())
+        self.minsize(width, height)
+
         if self.system == 'Windows':
             def _on_mousewheel(event):
                 self.sliceEditor.frame.canvas.yview_scroll(-1*(event.delta//120), "units")
@@ -1253,7 +1260,7 @@ class SliceEditorDialog(tk.Toplevel):
     def on_delete(self):
         audio.player.play_stop()
         self.withdraw()
-        
+
         parent=self.master
         parent.grab_set()
         parent.focus_set()
