@@ -38,6 +38,7 @@ trashIcon=None
 playIcon=None
 stopIcon=None
 stop_smallIcon=None
+trimIcon=None
 donateEurIcon=None
 donateUsdIcon=None
 
@@ -68,6 +69,7 @@ def init():
     global playIcon
     global stopIcon
     global stop_smallIcon
+    global trimIcon
     global donateEurIcon
     global donateUsdIcon
 
@@ -88,5 +90,6 @@ def init():
     playIcon=tk.PhotoImage(file=resource_path("images/play.gif"))
     stopIcon=tk.PhotoImage(file=resource_path("images/stop.gif"))
     stop_smallIcon=tk.PhotoImage(file=resource_path("images/stop-small.gif"))
+    trimIcon=tk.PhotoImage(file=resource_path("images/trim.gif"))
     donateEurIcon=tk.PhotoImage(file=resource_path("images/donate-eur.gif"))
     donateUsdIcon=tk.PhotoImage(file=resource_path("images/donate-usd.gif"))

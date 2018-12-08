@@ -31,6 +31,7 @@ import sys
 import RIFF
 import e2s_sample_all as e2s
 from VerticalScrolledFrame import VerticalScrolledFrame
+from e2s_sample_trim import trim
 
 import os
 import os.path
@@ -828,7 +829,11 @@ class NormalSampleOptions(tk.LabelFrame):
         self.buttonPlay.grid(row=2,column=5)
         self.buttonStop = tk.Button(self, image=GUI.res.stopIcon, command=self.play_stop)
         self.buttonStop.grid(row=2,column=6)
-        
+        self.buttonTrim = tk.Button(self, image=GUI.res.trimIcon, command=self.trim)
+        self.buttonTrim.grid(row=2, column=7, padx=10, pady=2)
+
+        ToolTip(self.buttonTrim, follow_mouse=1, text="trim sample:\ndelete everything before 'Start' and after 'End' points")
+
         self._selected=False
         self.startEntry.bind("<FocusIn>",self._focus_in,add="+")
         self.startEntry.bind("<FocusOut>",self._focus_out,add="+")
@@ -853,6 +858,17 @@ class NormalSampleOptions(tk.LabelFrame):
 
     def play_stop(self):
         audio.player.play_stop()
+
+    def trim(self):
+        if tkinter.messagebox.askokcancel(
+                'Trim Sample',
+                'This operation is not reversible',
+                icon='warning'
+        ):
+            audio.player.play_stop()
+            trim(self.smpl, self.start.get(), self.stop.get())
+            self.editor.set_sample(self.smpl_list, self.smpl_num)
+            self.focus()
 
     def set_sample(self, smpl_list, smpl_num):
         self.smpl_list = smpl_list

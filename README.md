@@ -269,6 +269,12 @@ You can also find a 'play' ![play sample icon](images/play.gif?raw=true) and 'st
 
 > Note that even if the sample is sliced these informations are stored in the sample library and you will be able to use them if you decide to stop to use your sample as sliced.
 
+In the `Normal sample options` section you can also find a 'trim' ![trim icon](images/trim.gif?raw=true) button. When pressing that button, unused sample parts before `Start` point and after `End` point will be deleted.
+
+> Trim is not reversible, be careful (you will need to re-import your original sample to restore deleted sections).
+
+> Trim only takes into account `Start` and `End` points. If your sample is sliced, and you have slices before `Start` or after `End` point, they will be lost.
+
 #### 3.2 Sliced sample options
 
 The `Sliced sample options` area can be used to edit slices' points.
